@@ -1,0 +1,90 @@
+/* Botão hambúrguer */
+.hamburger {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 999;
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #0F3D5D;
+  transition: transform 0.2s ease;
+}
+
+.hamburger:hover {
+  transform: scale(1.1);
+}
+
+/* Sidebar oculta */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 240px;
+  height: 100vh;
+  background-color: #0F3D5D;
+  color: white;
+  transition: left 0.3s ease;
+  z-index: 998;
+  padding: 1rem 1rem 2rem;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+}
+
+/* Quando aberta */
+.sidebar.open {
+  left: 0;
+}
+
+/* Logo */
+.logo-img {
+  width: 100%;
+  max-height: 60px;
+  margin-top: 4rem;
+  object-fit: contain;
+  margin-bottom: 2rem;
+}
+
+/* Menu */
+.sidebar-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu li {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-menu li a {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.sidebar-menu li a .icon {
+  margin-right: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.sidebar-menu li a:hover,
+.sidebar-menu li.active a {
+  background-color: #14507c;
+}
+
+/* Responsivo opcional para mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .sidebar-menu li a {
+    font-size: 0.75rem;
+  }
+}

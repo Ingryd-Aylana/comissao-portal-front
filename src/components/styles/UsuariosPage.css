@@ -1,0 +1,228 @@
+.user-page {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+
+.usuarios-page-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+  
+  .usuarios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .usuarios-title {
+    font-size: 1.8rem;
+    color: #0F3D5D;
+    
+  }
+  
+  .usuarios-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #0F3D5D;;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .usuarios-button:hover {
+    background-color: #598cb1;
+  }
+  
+  .usuarios-search-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .usuarios-search-input {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .usuarios-search-button {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: #0F3D5D;
+    color: white;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .usuarios-search-button:hover {
+    background-color: #598cb1;
+  }
+  
+  .icon {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .logo-perfil {
+    width: 180px;
+    height: auto;
+    max-width: 100%;
+    object-fit: contain;
+    transform: scale(1.4);
+    transform-origin: center;
+    text-align: center;
+    margin-bottom: 1rem;
+   justify-content: center;
+   align-items: center;
+   margin-left: 2rem;
+  }
+
+  /* Estilização modal novo usuário */
+
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 15, 15, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal-container {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    justify-items: center;
+  }
+  
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  
+  .modal-icon {
+    font-size: 2.2rem;
+    color: #0F3D5D;
+  }
+  
+  .modal-title {
+    color: #0F3D5D;
+    font-size: 2rem;
+    margin: 0;
+  }
+  
+  .modal-form input {
+    display: block;
+    width: 100%;
+    margin: 0.5rem 0;
+    padding: 0.95rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  
+  .btn-salvar {
+    background-color: #0F3D5D;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 250px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .btn-salvar:hover {
+    background-color: #0c2e40;
+  }
+  
+  .btn-cancelar {
+    background-color: #598cb1;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 250px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .btn-cancelar:hover {
+    background-color: #417ca0;
+  }
+  
+  @media (max-width: 500px) {
+    .btn-salvar,
+    .btn-cancelar {
+      width: 100%;
+    }
+  
+    .modal-actions {
+      flex-direction: column;
+    }
+  }
+
+  /* Estilização da mensagem de usuario novo */
+
+  .success-alert {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    text-align: center;
+    animation: fadeInOut 3s ease-in-out;
+  }
+  
+  /* Animação para o card */
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-10px); }
+    10% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-10px); }
+  }
+  
+  

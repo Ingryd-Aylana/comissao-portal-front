@@ -1,0 +1,71 @@
+.relatorios-master-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .relatorios-master-container h1 {
+    font-size: 2rem;
+    color: #0F3D5D;
+    margin-bottom: 1.5rem;
+  }
+  
+  .relatorios-master-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .relatorios-master-table th,
+  .relatorios-master-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .relatorios-master-table th {
+    background-color: #0F3D5D;
+    color: white;
+    font-weight: 600;
+  }
+  
+  .relatorios-master-table td {
+    font-size: 0.95rem;
+  }
+  
+  .btn-export {
+    margin-right: 0.5rem;
+    padding: 0.5rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .btn-export.pdf {
+    background-color: #D3D3D2;
+    color: black;
+  }
+  
+  .btn-export.excel {
+    background-color: #D3D3D2;
+    color: black;
+  }
+  
+  .filtro-barra {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .filtro-barra input {
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 300px;
+    font-size: 0.9rem;
+  }
+  

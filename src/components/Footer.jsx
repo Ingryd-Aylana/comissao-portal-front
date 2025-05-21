@@ -1,0 +1,52 @@
+import React from "react";
+import { FaFacebookF, FaInstagram, FaTwitter, FaWhatsapp, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from "react-icons/fa";
+import "../components/styles/Footer.css";
+
+export default function Footer() {
+  return (
+    <footer className="footer-container">
+      <div className="footer-content">
+
+        {/* Bloco da Logo e Descrição */}
+        <div className="footer-section">
+        <img src="/images/logo2.png" alt="Fedcorp Logo" className="logo-img" />
+        </div>
+
+        {/* Contato Rio de Janeiro */}
+        <div className="footer-section">
+          <h3>Rio de Janeiro</h3>
+          <p><FaPhoneAlt /> (21) 2516-6001</p>
+          <p><FaEnvelope /> sac@grupofedcorp.com.br</p>
+          <p><FaMapMarkerAlt /> Rua da Alfândega, 108, 7º andar - Centro - Rio de Janeiro/RJ</p>
+        </div>
+
+        {/* Contato São Paulo */}
+        <div className="footer-section">
+          <h3>São Paulo</h3>
+          <p><FaPhoneAlt /> (11) 4117-9979</p>
+          <p><FaEnvelope /> sacsp@grupofedcorp.com.br</p>
+          <p><FaMapMarkerAlt /> Rua Coronel Oscar Porto, 800 - Vila Mariana - São Paulo/SP</p>
+        </div>
+
+        {/* Redes Sociais */}
+        <div className="footer-section">
+          <h3>Redes Sociais</h3>
+          <div className="social-icons">
+            {/* Adicionar redes da Fedcorp */}
+            <a href="#"><FaFacebookF /></a>
+            <a href="#"><FaInstagram /></a>
+            <a href="#"><FaTwitter /></a>
+          </div>
+        </div>
+      </div>
+
+      <div className="footer-bottom">
+        <p>© 2025 Grupo Fedcorp. Desenvolvido por Grupo Fedcorp Desenvolvimento e Tecnologia</p>
+        {/* Adicionar número da Fedcorp */}
+        <a href="https://wa.me/552125166001" target="_blank" rel="noopener noreferrer" className="whatsapp-icon">
+          <FaWhatsapp />
+        </a>
+      </div>
+    </footer>
+  );
+}
