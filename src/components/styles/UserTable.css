@@ -27,6 +27,7 @@
   
   .acoes {
     text-align: center;
+    
   }
   
   .acoes-buttons {
@@ -63,3 +64,177 @@
     background-color: #4b5563;
   }
   
+  /* Estilização do status */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    text-transform: capitalize;
+  }
+  
+  /* Bolinha */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  /* Cor para status */
+  .status-badge.ativo {
+    color: #28a745;
+  }
+  
+  .status-badge.ativo .status-dot {
+    background-color: #28a745;
+  }
+  
+  .status-badge.inativo {
+    color: #dc3545;
+  }
+  
+  .status-badge.inativo .status-dot {
+    background-color: #dc3545;
+  }
+  
+  /* Modal de edição - sobreposição de fundo escurecido */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* fundo escuro com opacidade */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Conteúdo do modal */
+.modal-content {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  animation: fadeInScale 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+/* Título do modal */
+.modal-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+/* Rótulos dos inputs */
+.modal-content label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+  color: #555;
+  
+}
+
+/* Campos de input e select */
+.modal-content input,
+.modal-content select {
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border 0.2s ease;
+  
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+  border-color: #007bff;
+}
+
+/* Botão no modal */
+.modal-content .btn-outline {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #007bff;
+  background-color: transparent;
+  color: #007bff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content .btn-outline:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+/* Animação */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+/*  Mensagem ao alterar dados */
+
+.mensagem-sucesso {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: #28a745;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  z-index: 1100;
+  animation: fadeInOut 3s ease forwards;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  10%, 90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.modal-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+

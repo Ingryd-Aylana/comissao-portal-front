@@ -216,6 +216,18 @@
     text-align: center;
     animation: fadeInOut 3s ease-in-out;
   }
+
+  .error-alert {
+    background-color: #ffe5e5;
+    color: #cc0000;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  
   
   /* Animação para o card */
   @keyframes fadeInOut {

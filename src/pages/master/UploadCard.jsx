@@ -89,7 +89,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
     enviarParaBack(dados);
 
     // ✅ Exibe o relatório independente do back-end
-    mostrarRelatorio();
+    // mostrarRelatorio();
   };
 
   return (

@@ -162,6 +162,15 @@
   background-color: #2563eb;
 }
 
+.error-alert {
+  background-color: #ffe5e5;
+  color: #cc0000;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+}
 
 @media (max-width: 600px) {
   .perfil-container {

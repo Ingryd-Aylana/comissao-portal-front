@@ -78,6 +78,34 @@
   background-color: #14507c;
 }
 
+.logout-section {
+  margin-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 1rem ;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  gap: 0.5rem;
+  color: black;
+  background-color: #F8C018;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0.5rem 0.5rem;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+  width: 230px;
+}
+
+.logout-btn:hover {
+  background-color: #fdd14d;
+ 
+}
+
 /* Responsivo opcional para mobile */
 @media (max-width: 768px) {
   .sidebar {
