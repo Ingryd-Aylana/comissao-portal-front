@@ -29,7 +29,7 @@ export default function PerfilPage() {
     const [showModal, setShowModal] = useState(false);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({
-        nome: 'João Silva',
+        nome: 'João Santos',
         cpf: '123.456.789-00',
         email: 'joao@email.com',
         telefone: '(11) 98765-4321',

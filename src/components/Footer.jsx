@@ -1,5 +1,7 @@
 import React from "react";
-import { FaFacebookF, FaInstagram, FaTwitter, FaWhatsapp, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from "react-icons/fa";
+import { FaFacebookF , FaWhatsapp, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from "react-icons/fa";
+import { BsInstagram } from "react-icons/bs";
+import { SiLinkedin } from "react-icons/si";
 import "../components/styles/Footer.css";
 
 export default function Footer() {
@@ -33,9 +35,9 @@ export default function Footer() {
           <h3>Redes Sociais</h3>
           <div className="social-icons">
             {/* Adicionar redes da Fedcorp */}
-            <a href="#"><FaFacebookF /></a>
-            <a href="#"><FaInstagram /></a>
-            <a href="#"><FaTwitter /></a>
+            <a href="https://www.facebook.com/GrupoFedcorp/?locale=pt_BR"  target="_blank"><FaFacebookF /></a>
+            <a href="https://www.instagram.com/grupofedcorp/" target="_blank"><BsInstagram /></a>
+            <a href="https://www.linkedin.com/company/grupofedcorp/" target="_blank" className="icon-linkedin"><SiLinkedin /></a>
           </div>
         </div>
       </div>

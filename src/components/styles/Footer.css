@@ -49,12 +49,16 @@
     color: #003D6B;
     padding: 0.5rem;
     border-radius: 4px;
-    font-size: 1.1rem;
+    font-size: 1.1rem; 
     transition: background-color 0.3s;
   }
   
   .social-icons a:hover {
     background-color: #ccc;
+  }
+
+  .icon-linkedin {
+    font-size: 1.8rem;
   }
   
   .footer-bottom {
@@ -73,10 +77,10 @@
   background-color: #25D366;
   border-radius: 50%;
   font-size: 1.8rem;
-  padding: 0.5rem;
+  padding: 0.4rem;
   position: absolute;
   right: 1rem;
-  top: 50%;
+  /* top: 50%; */
   transform: translateY(-50%); /* Centraliza verticalmente */
     
   }

@@ -2,11 +2,13 @@ import React from 'react';
 import BannerCard from '../../components/BannerCard';
 import useProducerData from '../../hooks/UseProducerData';
 import { BarChart2, Users, DollarSign } from 'lucide-react';
-import "../../components/styles/Dashboard.css"
+import "../../components/styles/Dashboard.css";
 import Footer from '../../components/Footer';
 
 export default function Dashboard() {
+
   const {
+    producerInfo,
     totalSales,
     totalCommission,
     recentCommissions,
@@ -23,7 +25,10 @@ export default function Dashboard() {
       <BannerCard />
 
       <main className="dashboard-container">
+
         <h1 className="dashboard-title">Painel do Produtor</h1>
+        {/* Nome do produtor */}
+        <h3 className='dashboard-title'>Olá, {producerInfo.nome_produtor}!</h3>
 
         {/* Resumo de Vendas */}
         <div className="card-grid">
@@ -33,12 +38,12 @@ export default function Dashboard() {
             <span className="value">{totalSales}</span>
           </div>
           <div className="card">
-          <DollarSign size={24} />
+            <DollarSign size={24} />
             <span className="label"><strong>MILHAGEM TOTAL</strong></span>
             <span className="value">R$ {totalCommission}</span>
           </div>
           <div className="card">
-              <Users size={24} />
+            <Users size={24} />
             <span className="label"><strong>ÚLTIMAS MILHAGENS</strong></span>
             <span className="value">{recentCommissions.length}</span>
           </div>
@@ -75,15 +80,23 @@ export default function Dashboard() {
         <div className="card-grid-produtor">
           <div className="card-produtor">
             <span className="label"><strong>PRODUTOR</strong></span>
+            <br />
+            <span className="value">{producerInfo.nome_produtor}</span>
           </div>
           <div className="card-produtor">
             <span className="label"><strong>DADOS DE PAGAMENTO</strong></span>
+            <br />
+            <span className="value">{producerInfo.dadosPagamento}</span>
           </div>
           <div className="card-produtor">
             <span className="label"><strong>CONTATO:</strong></span>
+            <br />
+            <span className="value">{producerInfo.telefone}</span>
           </div>
           <div className="card-produtor">
             <span className="label"><strong>E-MAIL:</strong></span>
+            <br />
+            <span className="value">{producerInfo.email}</span>
           </div>
         </div>
       </main>

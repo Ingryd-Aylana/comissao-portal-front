@@ -4,7 +4,8 @@ export default function useProducerData() {
   const [totalSales, setTotalSales] = useState(0);
   const [totalCommission, setTotalCommission] = useState(0);
   const [recentCommissions, setRecentCommissions] = useState([]);
-  
+  const [producerInfo, setProducerInfo] = useState({});
+
   useEffect(() => {
     // Simulação de dados mockados para teste em tela
     const fetchData = async () => {
@@ -13,7 +14,7 @@ export default function useProducerData() {
         totalCommission: 1750,
         recentCommissions: [
           {
-            policyHolder: 'João da Silva',
+            policyHolder: 'João Barros',
             policyNumber: 'AP123456',
             startDate: '2025-05-01',
             netPremium: 1200.00,
@@ -34,12 +35,18 @@ export default function useProducerData() {
             commission: 225.00,
           },
         ],
+        producerInfo: {
+          nome_produtor: 'João Santos',
+          email: 'joao@email.com',
+          telefone: '(11) 98765-4321',
+          dadosPagamento: 'Cartão Alelo',
+        }
       };
 
       setTotalSales(mockData.totalSales);
       setTotalCommission(mockData.totalCommission);
       setRecentCommissions(mockData.recentCommissions);
-      
+      setProducerInfo(mockData.producerInfo);
     };
 
     fetchData();
@@ -49,5 +56,6 @@ export default function useProducerData() {
     totalSales,
     totalCommission,
     recentCommissions,
+    producerInfo,
   };
 }

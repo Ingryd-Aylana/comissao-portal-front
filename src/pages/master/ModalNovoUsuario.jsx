@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { FaUser } from 'react-icons/fa';
 
 const ModalNovoUsuario = ({ isOpen, onClose, onSave, usuarioParaEditar = null }) => {
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false); // Exibe mensagem de sucesso
+  const [successMessage, setSuccessMessage] = useState(''); // Define a mensagem de sucesso
   const [formData, setFormData] = useState({
     nome: '',
     cpf: '',
@@ -10,8 +11,9 @@ const ModalNovoUsuario = ({ isOpen, onClose, onSave, usuarioParaEditar = null })
     usuario: '',
     senha: ''
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''); // Armazena mensagem de erro
 
+  // Atualiza o formulário ao abrir o modal ou ao editar usuário
   useEffect(() => {
     if (usuarioParaEditar) {
       setFormData({
@@ -30,15 +32,22 @@ const ModalNovoUsuario = ({ isOpen, onClose, onSave, usuarioParaEditar = null })
         senha: ''
       });
     }
-  }, [usuarioParaEditar]);
+
+    // Reseta estados ao abrir o modal
+    setShowSuccess(false);
+    setSuccessMessage('');
+    setError('');
+  }, [usuarioParaEditar, isOpen]);
 
   if (!isOpen) return null;
 
+  // Atualiza o estado do formulário conforme digitação do usuário
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Valida os campos antes de salvar
   const validateFields = () => {
     const { nome, cpf, email, usuario, senha } = formData;
 
@@ -54,6 +63,7 @@ const ModalNovoUsuario = ({ isOpen, onClose, onSave, usuarioParaEditar = null })
     return '';
   };
 
+  // Submete o formulário e dispara a função de salvamento
   const handleSubmit = (e) => {
     e.preventDefault();
     const validationError = validateFields();
@@ -65,9 +75,16 @@ const ModalNovoUsuario = ({ isOpen, onClose, onSave, usuarioParaEditar = null })
     setError('');
     onSave(formData); // dispara o salvamento no componente pai
 
+    // Define mensagem personalizada conforme operação
+    const mensagem = usuarioParaEditar
+      ? "Usuário atualizado com sucesso!"
+      : "Usuário cadastrado com sucesso!";
+    setSuccessMessage(mensagem);
     setShowSuccess(true);
+
     setTimeout(() => {
       setShowSuccess(false);
+      setSuccessMessage('');
       onClose();
     }, 2000);
   };
@@ -83,9 +100,12 @@ const ModalNovoUsuario = ({ isOpen, onClose, onSave, usuarioParaEditar = null })
         </div>
         <hr /><br />
 
-        {showSuccess && <div className="success-alert">Usuário salvo com sucesso!</div>}
+        {/* Exibe alerta de sucesso */}
+        {showSuccess && <div className="success-alert">{successMessage}</div>}
+        {/* Exibe alerta de erro */}
         {error && <div className="error-alert">{error}</div>}
 
+        {/* Formulário de cadastro/edição */}
         <form className="modal-form" onSubmit={handleSubmit}>
           <input type="text" name="nome" placeholder="Nome completo" value={formData.nome} onChange={handleChange} required />
           <input type="text" name="cpf" placeholder="CPF" value={formData.cpf} onChange={handleChange} required />

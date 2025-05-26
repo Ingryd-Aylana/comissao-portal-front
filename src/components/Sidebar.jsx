@@ -5,6 +5,8 @@ import {
 } from 'react-icons/fa';
 import "./styles/Sidebar.css";
 import { LogOut } from 'lucide-react';
+import '../hooks/UseProducerData';
+import useProducerData from '../hooks/UseProducerData';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,10 +14,12 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { producerInfo } = useProducerData();
+
   const toggleSidebar = () => setIsOpen(!isOpen);
   const handleMenuClick = () => setIsOpen(false);
 
-//  Função de logout 
+  //  Função de logout 
   const handleLogout = () => {
     // Limpa dados de sessão/localStorage se necessário
     localStorage.removeItem("token"); 
@@ -41,6 +45,11 @@ const Sidebar = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
+
+  // Função para capitalizar nome do produtor
+  const capitalizeName = (name) => {
+    return name?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+  };
 
   return (
     <>
@@ -89,6 +98,9 @@ const Sidebar = () => {
 
           {/* Botão de logout */}
           <div className="logout-section">
+            <div>
+              <p>{capitalizeName(producerInfo?.nome_produtor || 'Usuário')}</p>
+            </div>
             <button onClick={handleLogout} className='logout-btn'>
               <LogOut size={20} />
               <span>Sair</span>
