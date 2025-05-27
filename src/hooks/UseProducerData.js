@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export default function useProducerData() {
   const [totalSales, setTotalSales] = useState(0);
@@ -14,33 +14,33 @@ export default function useProducerData() {
         totalCommission: 1750,
         recentCommissions: [
           {
-            policyHolder: 'João Barros',
-            policyNumber: 'AP123456',
-            startDate: '2025-05-01',
-            netPremium: 1200.00,
-            commission: 180.00,
+            policyHolder: "Cond Barros",
+            policyNumber: "AP123456",
+            startDate: "01-05-2025",
+            netPremium: 1200.0,
+            commission: 180.0,
           },
           {
-            policyHolder: 'Maria Oliveira',
-            policyNumber: 'AP789012',
-            startDate: '2025-04-25',
-            netPremium: 980.00,
-            commission: 147.00,
+            policyHolder: "Cond Jardim de Oliveira",
+            policyNumber: "AP789012",
+            startDate: "15-05-2025",
+            netPremium: 980.0,
+            commission: 147.0,
           },
           {
-            policyHolder: 'Carlos Pereira',
-            policyNumber: 'AP345678',
-            startDate: '2025-04-15',
-            netPremium: 1500.00,
-            commission: 225.00,
+            policyHolder: "Cond Flor",
+            policyNumber: "AP345678",
+            startDate: "20-05-2025",
+            netPremium: 1500.0,
+            commission: 225.0,
           },
         ],
         producerInfo: {
-          nome_produtor: 'João Santos',
-          email: 'joao@email.com',
-          telefone: '(11) 98765-4321',
-          dadosPagamento: 'Cartão Alelo',
-        }
+          nome_produtor: "Daniel Santos",
+          email: "joao@email.com",
+          telefone: "(11) 98765-4321",
+          dadosPagamento: "Cartão Alelo",
+        },
       };
 
       setTotalSales(mockData.totalSales);
