@@ -36,7 +36,6 @@ export default function PerfilPage() {
     email: "daniel@email.com",
     telefone: "(11) 98765-4321",
     pagamento: "Cartão Alelo",
-    endereço: "Rua da Alfandega, 108",
     usuario: "danielsilva",
     senha: "********",
   });
@@ -160,19 +159,6 @@ export default function PerfilPage() {
 
             <div className="input-group">
               <label>
-                <FaUser /> Endereço
-              </label>
-              <input
-                name="endereço"
-                value={formData.endereço}
-                onChange={handleChange}
-                className={isEditing ? "editable" : ""}
-                readOnly={!isEditing}
-              />
-            </div>
-
-            <div className="input-group">
-              <label>
                 <FaUser /> Usuário
               </label>
               <input
@@ -209,8 +195,6 @@ export default function PerfilPage() {
           onClose={() => setShowModal(false)}
         />
       </div>
-
-      <Footer />
     </div>
   );
 }

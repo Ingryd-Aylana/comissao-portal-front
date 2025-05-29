@@ -85,8 +85,7 @@ const ModalNovoUsuario = ({ isOpen, onClose, onSave, usuarioParaEditar = null })
     setTimeout(() => {
       setShowSuccess(false);
       setSuccessMessage('');
-      onClose();
-    }, 2000);
+    });
   };
 
   return (
