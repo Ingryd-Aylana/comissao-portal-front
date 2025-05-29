@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  FaBars, FaChartPie, FaFileAlt, FaUser,
-} from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FaBars, FaChartPie, FaFileAlt, FaUser } from "react-icons/fa";
 import "./styles/Sidebar.css";
-import { LogOut } from 'lucide-react';
-import '../hooks/UseProducerData';
-import useProducerData from '../hooks/UseProducerData';
+import { LogOut } from "lucide-react";
+import { auth } from "../config/firebase";
+import { signOut } from "firebase/auth";
+import "../hooks/UseProducerData";
+import useProducerData from "../hooks/UseProducerData";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,14 +19,19 @@ const Sidebar = () => {
   const toggleSidebar = () => setIsOpen(!isOpen);
   const handleMenuClick = () => setIsOpen(false);
 
-  //  Função de logout 
+  //  Função de logout
   const handleLogout = () => {
-    // Limpa dados de sessão/localStorage se necessário
-    localStorage.removeItem("token"); 
-    sessionStorage.clear();
+    signOut(auth)
+      .then(() => {
+        navigate("/login");
+        // Limpa dados de sessão/localStorage se necessário
+        localStorage.removeItem("token");
+        sessionStorage.clear();
+      })
 
-    // Redireciona para login
-    navigate('/');
+      .catch((error) => {
+        console.error("Erro ao fazer logout:", error);
+      });
   };
 
   // Fecha o menu se clicar fora
@@ -38,11 +43,11 @@ const Sidebar = () => {
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
 
@@ -53,43 +58,63 @@ const Sidebar = () => {
 
   return (
     <>
-      <button className="hamburger" onClick={toggleSidebar} aria-label="Abrir menu lateral">
+      <button
+        className="hamburger"
+        onClick={toggleSidebar}
+        aria-label="Abrir menu lateral"
+      >
         <FaBars size={22} />
       </button>
 
-      <aside ref={sidebarRef} className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <aside ref={sidebarRef} className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="logo">
-          <img src="/images/logo2.png" alt="Fedcorp Logo" className="logo-img" />
+          <img
+            src="/images/logo2.png"
+            alt="Fedcorp Logo"
+            className="logo-img"
+          />
         </div>
 
         <nav className="sidebar-menu">
           <ul>
-            <li className={location.pathname === '/' ? 'active' : ''}>
-              <Link to="/" onClick={handleMenuClick}>
+            <li className={location.pathname === "/dashboard" ? "active" : ""}>
+              <Link to="/dashboard" onClick={handleMenuClick}>
                 <FaChartPie className="icon" /> DASHBOARD
               </Link>
             </li>
-            <li className={location.pathname === '/relatorios' ? 'active' : ''}>
+            <li className={location.pathname === "/relatorios" ? "active" : ""}>
               <Link to="/relatorios" onClick={handleMenuClick}>
                 <FaFileAlt className="icon" /> RELATÓRIOS
               </Link>
             </li>
-            <li className={location.pathname === '/perfil' ? 'active' : ''}>
+            <li className={location.pathname === "/perfil" ? "active" : ""}>
               <Link to="/perfil" onClick={handleMenuClick}>
                 <FaUser className="icon" /> PERFIL
               </Link>
             </li>
-            <li className={location.pathname === '/master/DashboardMaster' ? 'active' : ''}>
+            <li
+              className={
+                location.pathname === "/master/DashboardMaster" ? "active" : ""
+              }
+            >
               <Link to="/master/dashboard" onClick={handleMenuClick}>
                 <FaChartPie className="icon" /> DASHBOARD MASTER
               </Link>
             </li>
-            <li className={location.pathname === '/master/UsuariosPage' ? 'active' : ''}>
+            <li
+              className={
+                location.pathname === "/master/UsuariosPage" ? "active" : ""
+              }
+            >
               <Link to="/master/usuariosPage" onClick={handleMenuClick}>
                 PÁGINA DE USUÁRIOS
               </Link>
             </li>
-            <li className={location.pathname === '/master/UsuariosPage' ? 'active' : ''}>
+            <li
+              className={
+                location.pathname === "/master/UsuariosPage" ? "active" : ""
+              }
+            >
               <Link to="/master/uploadCard" onClick={handleMenuClick}>
                 IMPORTAÇÃO DE PLANILHA
               </Link>
@@ -99,9 +124,9 @@ const Sidebar = () => {
           {/* Botão de logout */}
           <div className="logout-section">
             <div>
-              <p>{capitalizeName(producerInfo?.nome_produtor || 'Usuário')}</p>
+              <p>{capitalizeName(producerInfo?.nome_produtor || "Usuário")}</p>
             </div>
-            <button onClick={handleLogout} className='logout-btn'>
+            <button onClick={handleLogout} className="logout-btn">
               <LogOut size={20} />
               <span>Sair</span>
             </button>

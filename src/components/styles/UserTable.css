@@ -170,9 +170,9 @@
   margin-top: 1rem;
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
-  border: 1px solid #007bff;
+  border: 1px solid #0F3D5D;
   background-color: transparent;
-  color: #007bff;
+  color: #0F3D5D;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s ease;
@@ -182,7 +182,7 @@
 }
 
 .modal-content .btn-outline:hover {
-  background-color: #007bff;
+  background-color: #0F3D5D;
   color: #fff;
 }
 
