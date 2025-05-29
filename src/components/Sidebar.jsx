@@ -90,7 +90,7 @@ const Sidebar = () => {
                 <FaUser className="icon" /> PERFIL
               </Link>
             </li>
-            {/*<li
+            <li
               className={
                 location.pathname === "/master/DashboardMaster" ? "active" : ""
               }
@@ -116,7 +116,7 @@ const Sidebar = () => {
               <Link to="/master/uploadCard" onClick={handleMenuClick}>
                 IMPORTAÇÃO DE PLANILHA
               </Link>
-            </li> */}
+            </li>
           </ul>
 
           {/* Botão de logout */}
