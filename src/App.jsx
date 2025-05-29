@@ -1,39 +1,115 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./config/firebase";
+import Sidebar from "./components/Sidebar";
+import Login from "./pages/Login/Login";
 
 // Páginas usuário comum
-import Dashboard from './pages/produtor/Dashboard';
-import RelatoriosPage from './pages/produtor/RelatoriosPage';
-import PerfilPage from './pages/produtor/PerfilPage';
+import Dashboard from "./pages/produtor/Dashboard";
+import RelatoriosPage from "./pages/produtor/RelatoriosPage";
+import PerfilPage from "./pages/produtor/PerfilPage";
 
 // Páginas usuário master
-import DashboardMaster from './pages/master/DashboardMaster';
-import RelatoriosProdutoresPage from './pages/master/RelatoriosProdutoresPage';
-import UsuariosPage from './pages/master/UsuariosPage';
-import UploadCard from './pages/master/UploadCard';
-// import PerfilMasterPage from './pages/master/PerfilPage'; 
+import DashboardMaster from "./pages/master/DashboardMaster";
+import RelatoriosProdutoresPage from "./pages/master/RelatoriosProdutoresPage";
+import UsuariosPage from "./pages/master/UsuariosPage";
+import UploadCard from "./pages/master/UploadCard";
+// import PerfilMasterPage from './pages/master/PerfilPage';
+
+const PrivateRoute = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div>Carregando...</div>;
+  }
+
+  return isAuthenticated ? (
+    <>
+      <Sidebar />
+      <main className="container">{children}</main>
+    </>
+  ) : (
+    <Navigate to="/login" replace />
+  );
+};
 
 function App() {
   return (
-    <>
-      <Sidebar />
-      <main className="container">
-        <Routes>
-          {/* Rotas usuário comum */}
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/relatorios" element={<RelatoriosPage />} />
-          <Route path="/perfil" element={<PerfilPage />} />
+    <Routes>
+      <Route path="/login" element={<Login />} />
 
-          {/* Rotas usuário master */}
-          <Route path="/master/dashboard" element={<DashboardMaster />} />
-          <Route path="/master/relatoriosProdutoresPage" element={<RelatoriosProdutoresPage />} />
-          <Route path="/master/usuariosPage" element={<UsuariosPage />} />
-          <Route path="/master/uploadCard" element={<UploadCard />} />
-          {/* <Route path="/master/perfil" element={<PerfilMasterPage />} /> */}
-        </Routes>
-      </main>
-    </>
+      {/* Rotas protegidas */}
+      <Route
+        path="/"
+        element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/relatorios"
+        element={
+          <PrivateRoute>
+            <RelatoriosPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/perfil"
+        element={
+          <PrivateRoute>
+            <PerfilPage />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Rotas usuário master */}
+      <Route
+        path="/master/dashboard"
+        element={
+          <PrivateRoute>
+            <DashboardMaster />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/master/relatoriosProdutoresPage"
+        element={
+          <PrivateRoute>
+            <RelatoriosProdutoresPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/master/usuariosPage"
+        element={
+          <PrivateRoute>
+            <UsuariosPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/master/uploadCard"
+        element={
+          <PrivateRoute>
+            <UploadCard />
+          </PrivateRoute>
+        }
+      />
+      {/* <Route path="/master/perfil" element={<PerfilMasterPage />} /> */}
+    </Routes>
   );
 }
 
