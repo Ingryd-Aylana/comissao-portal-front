@@ -43,7 +43,7 @@ export default function Footer() {
       </div>
 
       <div className="footer-bottom">
-        <p>© 2025 Grupo Fedcorp. Desenvolvido por Grupo Fedcorp Desenvolvimento e Tecnologia</p>
+        <p>Desenvolvido por Grupo Fedcorp Desenvolvimento e Tecnologia © 2025</p>
         {/* Adicionar número da Fedcorp */}
         <a href="https://wa.me/552125166001" target="_blank" rel="noopener noreferrer" className="whatsapp-icon">
           <FaWhatsapp />

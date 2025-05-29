@@ -92,7 +92,7 @@ const Sidebar = () => {
                 <FaUser className="icon" /> PERFIL
               </Link>
             </li>
-            <li
+            {/* <li
               className={
                 location.pathname === "/master/DashboardMaster" ? "active" : ""
               }
@@ -100,8 +100,8 @@ const Sidebar = () => {
               <Link to="/master/dashboard" onClick={handleMenuClick}>
                 <FaChartPie className="icon" /> DASHBOARD MASTER
               </Link>
-            </li>
-            <li
+            </li> */}
+            {/* <li
               className={
                 location.pathname === "/master/UsuariosPage" ? "active" : ""
               }
@@ -109,8 +109,8 @@ const Sidebar = () => {
               <Link to="/master/usuariosPage" onClick={handleMenuClick}>
                 PÁGINA DE USUÁRIOS
               </Link>
-            </li>
-            <li
+            </li> */}
+            {/* <li
               className={
                 location.pathname === "/master/UsuariosPage" ? "active" : ""
               }
@@ -118,7 +118,7 @@ const Sidebar = () => {
               <Link to="/master/uploadCard" onClick={handleMenuClick}>
                 IMPORTAÇÃO DE PLANILHA
               </Link>
-            </li>
+            </li> */}
           </ul>
 
           {/* Botão de logout */}
