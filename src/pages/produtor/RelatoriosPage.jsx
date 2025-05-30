@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import "../../components/styles/RelatoriosPage.css";
 import RelatorioImagem from "../../components/RelatorioImagem";
 import { FaFilePdf, FaFileExcel, FaSearch } from "react-icons/fa";
-import { getMilhagensDoUsuarioLogado } from "../../services/comissaoService";
+import {
+  getMilhagensDoUsuarioLogado,
+  getCurrentUserFirestoreData,
+} from "../../services/comissaoService";
 
 export default function RelatoriosPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -10,11 +13,16 @@ export default function RelatoriosPage() {
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [producerName, setProducerName] = useState("");
 
   useEffect(() => {
-    const fetchRelatorios = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
+        // Buscar dados do usuário
+        const userData = await getCurrentUserFirestoreData();
+        setProducerName(userData.nome || "");
+
         const milhagens = await getMilhagensDoUsuarioLogado();
 
         // Agrupar milhagens por mês
@@ -60,18 +68,24 @@ export default function RelatoriosPage() {
       }
     };
 
-    fetchRelatorios();
+    fetchData();
   }, []);
 
   const handleDownload = async (index, type) => {
     setDownloading({ [`${index}-${type}`]: true });
 
     try {
-      // Define o nome do arquivo padrão sem o nome do produtor
+      // Formatar o nome do produtor (remover espaços e caracteres especiais)
+      const formattedName = producerName
+        .replace(/\s+/g, "") // Remove espaços
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, ""); // Remove acentos
+
+      // Define o nome do arquivo com o nome do produtor
       const nomeArquivo =
         type === "pdf"
-          ? "relatorio-milhagem.pdf"
-          : "relatorio-milhagem.xlsx";
+          ? `relatorio-milhagem-${formattedName}.pdf`
+          : `relatorio-milhagem-${formattedName}.xlsx`;
 
       // Caminho relativo ao public/
       const url = `/relatorios/${nomeArquivo}`;
