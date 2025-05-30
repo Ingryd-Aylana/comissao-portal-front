@@ -64,9 +64,12 @@ export default function useProducerData() {
           .map((segurado) => ({
             policyHolder: segurado.segurado,
             policyNumber: segurado.apolice,
-            startDate: segurado.inicioVig
-              ? new Date(segurado.inicioVig).toLocaleDateString("pt-BR")
-              : "",
+            startDate:
+              segurado.inicioVig && segurado.inicioVig.toDate
+                ? segurado.inicioVig.toDate().toLocaleDateString("pt-BR")
+                : segurado.inicioVig instanceof Date
+                ? segurado.inicioVig.toLocaleDateString("pt-BR")
+                : "-",
             netPremium: segurado.prLiqParc || 0,
             commission: segurado.vlRepasse || 0,
           }));
