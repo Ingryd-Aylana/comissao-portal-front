@@ -2,7 +2,6 @@ html, body {
   margin: 0;
   padding: 0;
   width: 100%;
- 
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -22,6 +21,7 @@ html, body {
   gap: 2rem;
   width: 100%;
   max-width: 100%;
+  max-width: 1500px;
   margin: 0 auto;
 }
 
@@ -92,7 +92,7 @@ html, body {
   padding: 0.4rem;
   position: absolute;
   right: 2.5rem;
-  transform: translateY(-50%);
+
 }
 
 /* Responsividade */

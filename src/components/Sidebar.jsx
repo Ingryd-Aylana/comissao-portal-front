@@ -5,7 +5,6 @@ import "./styles/Sidebar.css";
 import { LogOut } from "lucide-react";
 import { auth } from "../config/firebase";
 import { signOut } from "firebase/auth";
-import "../hooks/UseProducerData";
 import useProducerData from "../hooks/UseProducerData";
 
 const Sidebar = () => {
@@ -19,7 +18,7 @@ const Sidebar = () => {
   const toggleSidebar = () => setIsOpen(!isOpen);
   const handleMenuClick = () => setIsOpen(false);
 
-  //  Função de logout
+  // Função de logout
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
@@ -28,7 +27,6 @@ const Sidebar = () => {
         localStorage.removeItem("token");
         sessionStorage.clear();
       })
-
       .catch((error) => {
         console.error("Erro ao fazer logout:", error);
       });
@@ -112,7 +110,7 @@ const Sidebar = () => {
             </li> */}
             {/* <li
               className={
-                location.pathname === "/master/UsuariosPage" ? "active" : ""
+                location.pathname === "/master/uploadCard" ? "active" : ""
               }
             >
               <Link to="/master/uploadCard" onClick={handleMenuClick}>

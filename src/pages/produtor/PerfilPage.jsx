@@ -36,7 +36,6 @@ export default function PerfilPage() {
     email: "daniel@email.com",
     telefone: "(11) 98765-4321",
     pagamento: "Cartão Alelo",
-    endereço: "Rua da Alfandega, 108",
     usuario: "danielsilva",
     senha: "********",
   });
@@ -155,19 +154,6 @@ export default function PerfilPage() {
                 name="pagamento"
                 value={formData.pagamento}
                 onChange={handleChange}
-              />
-            </div>
-
-            <div className="input-group">
-              <label>
-                <FaUser /> Endereço
-              </label>
-              <input
-                name="endereço"
-                value={formData.endereço}
-                onChange={handleChange}
-                className={isEditing ? "editable" : ""}
-                readOnly={!isEditing}
               />
             </div>
 
