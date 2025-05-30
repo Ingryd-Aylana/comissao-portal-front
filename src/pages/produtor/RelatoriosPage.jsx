@@ -31,10 +31,8 @@ export default function RelatoriosPage() {
 
   return (
     <div className="main">
-      
       <div className="relatorios-container">
         <RelatorioImagem />
-
         <h1>Relatórios Disponíveis</h1>
 
         {/* Barra de busca por mês do relatório */}
@@ -48,59 +46,61 @@ export default function RelatoriosPage() {
           />
         </div>
 
-        <table className="relatorios-table">
-          {/* Cabeçalho da planilha */}
-          <thead>
-            <tr>
-              <th>Mês</th>
-              <th>Data de Geração</th>
-              <th>Milhagem</th>
-              <th>Exportar</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredRelatorios.map((relatorio, index) => (
-              // Referência aos dados criados, e corpo da planilha
-              <tr key={index}>
-                <td>{relatorio.mes}</td>
-                <td>{relatorio.dataGeracao}</td>
-                <td>{relatorio.milhagem}</td>
-                <td>
-                  {/* Botões para baixar os relatórios */}
-                  {relatorio.pdf && (
-                    <button
-                      className="btn-export pdf"
-                      onClick={() => handleDownload(index, 'pdf')}
-                      disabled={downloading[`${index}-pdf`]}
-                    >
-                      {downloading[`${index}-pdf`] ? 'Baixando...' : (
-                        <>
-                          <FaFilePdf /> PDF
-                        </>
-                      )}
-                    </button>
-                  )}
-                  {relatorio.excel && (
-                    <button
-                      className="btn-export excel"
-                      onClick={() => handleDownload(index, 'excel')}
-                      disabled={downloading[`${index}-excel`]}
-                    >
-                      {downloading[`${index}-excel`] ? 'Baixando...' : (
-                        <>
-                          <FaFileExcel /> Excel
-                        </>
-                      )}
-                    </button>
-                  )}
-                </td>
+        {/* Wrapper para tornar a tabela responsiva */}
+        <div className="relatorio-tabela-wrapper">
+          <table className="relatorios-table">
+            {/* Cabeçalho da planilha */}
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Data de Geração</th>
+                <th>Milhagem</th>
+                <th>Exportar</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-       
-      </div>     
+            </thead>
+
+            <tbody>
+              {filteredRelatorios.map((relatorio, index) => (
+                // Referência aos dados criados, e corpo da planilha
+                <tr key={index}>
+                  <td>{relatorio.mes}</td>
+                  <td>{relatorio.dataGeracao}</td>
+                  <td>{relatorio.milhagem}</td>
+                  <td>
+                    {/* Botões para baixar os relatórios */}
+                    {relatorio.pdf && (
+                      <button
+                        className="btn-export pdf"
+                        onClick={() => handleDownload(index, 'pdf')}
+                        disabled={downloading[`${index}-pdf`]}
+                      >
+                        {downloading[`${index}-pdf`] ? 'Baixando...' : (
+                          <>
+                            <FaFilePdf /> PDF
+                          </>
+                        )}
+                      </button>
+                    )}
+                    {relatorio.excel && (
+                      <button
+                        className="btn-export excel"
+                        onClick={() => handleDownload(index, 'excel')}
+                        disabled={downloading[`${index}-excel`]}
+                      >
+                        {downloading[`${index}-excel`] ? 'Baixando...' : (
+                          <>
+                            <FaFileExcel /> Excel
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+    </div>
   );
 }

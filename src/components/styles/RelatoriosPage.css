@@ -1,11 +1,9 @@
 .relatorios-container {
   margin: 2rem auto;
   padding: 0 1.5rem;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   width: 100%;
   max-width: 1000px;
-  height: 220px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Título principal da página */
@@ -15,12 +13,48 @@
   color: #003D6B;
 }
 
+/* Barra de busca */
+.relatorio-filtro {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  background-color: #f1f1f1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  max-width: 100%;
+  gap: 0.5rem;
+}
+
+.relatorio-filtro input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 1rem;
+}
+
+.search-icon {
+  color: #0F3D5D;
+  font-size: 1.2rem;
+}
+
+/* Wrapper da tabela para permitir rolagem horizontal */
+.relatorio-tabela-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  display: block;
+  box-sizing: border-box;
+}
+
 /* Tabela dos relatórios */
 .relatorios-table {
+  min-width: 600px; /* suficiente para scroll no mobile */
   width: 100%;
   border-collapse: collapse;
   background-color: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  table-layout: auto; /* Evita colunas desnecessariamente largas */
 }
 
 .relatorios-table th, .relatorios-table td {
@@ -37,7 +71,7 @@
 /* Botões de exportação */
 .btn-export {
   margin-right: 0.5rem;
-  padding: 0.5rem 0.8rem;
+  padding: 0.45rem 0.9rem;
   border: none;
   border-radius: 4px;
   font-weight: 600;
@@ -45,17 +79,22 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  transition: background-color 0.3s ease, opacity 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .btn-export.pdf {
-  background-color: #D3D3D2;
-  color: black;
+  background-color: #e74c3c;
+  color: white;
 }
 
 .btn-export.excel {
-  background-color: #D3D3D2;
-  color: black;
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-export:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
 }
 
 /* Estado de desabilitado durante download */
@@ -64,28 +103,14 @@
   cursor: not-allowed;
 }
 
-/* Estilo da barra de busca */
-.relatorio-filtro {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-  background-color: #ddd;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  max-width: 1000px;
-  gap: 0.5rem;
-}
+/* Mobile first adjustments */
+@media (max-width: 600px) {
+  .relatorio-filtro {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-.relatorio-filtro input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 1rem;
+  .btn-export {
+    margin-bottom: 0.3rem;
+  }
 }
-
-.search-icon {
-  color: #0F3D5D;
-  font-size: 1rem;
-}
-
