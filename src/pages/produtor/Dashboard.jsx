@@ -11,6 +11,7 @@ export default function Dashboard() {
     totalSales,
     totalCommission,
     recentCommissions,
+    totalSegurados,
     loading,
     error,
   } = useProducerData();
@@ -71,7 +72,7 @@ export default function Dashboard() {
             <span className="label">
               <strong>ÚLTIMAS MILHAGENS</strong>
             </span>
-            <span className="value">{recentCommissions.length}</span>
+            <span className="value">{totalSegurados}</span>
           </div>
         </div>
 

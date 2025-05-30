@@ -1,4 +1,3 @@
-// firestoreSeed.js - Estrutura nova ideal
 import { db } from "./firebase.js";
 import {
   collection,
@@ -8,102 +7,136 @@ import {
   writeBatch,
 } from "firebase/firestore";
 
-async function seedFirestore() {
-  console.log("Iniciando seed no Firestore...");
+async function seedNovosDados() {
+  console.log("Iniciando seed de novos dados...");
+
   const batch = writeBatch(db);
 
   try {
-    // Administradoras
-    const adminRef = doc(collection(db, "administradoras"), "adm_001");
-    batch.set(adminRef, {
-      nome: "BBZ",
-      cpfCnpj: "12345678000199",
-      responsavel: "Carlos Silva",
-      email: "carlos.silva@admin.com",
-      telefone: "9999-1111",
-      endereco: "Rua A, 100",
-      dataCriacao: Timestamp.now(),
-      dataAtualizacao: Timestamp.now(),
-      status: "A",
-    });
+    // ---------- Usuários ----------
+    const novosUsuarios = [
+      {
+        id: "l4VYEXWSchVkFWzYgaljuvfiNgy2",
+        data: {
+          nome: "Fernanda Bertusso",
+          email: "fab@bbz.com.br",
+          cpf: "319.739.838-69",
+          celular: "(11)996473696",
+          telefone: "(11)996473696",
+          endereco: "",
+          dataCriacao: Timestamp.now(),
+          dataAtualizacao: Timestamp.now(),
+          status: "A",
+          tipoUsuario: "produtor",
+          administradoraId: "BBZ",
+        },
+      },
+      // adicione outros usuários aqui...
+    ];
 
-    // Usuários
-    const userRef = doc(collection(db, "usuarios"), "user_001");
-    batch.set(userRef, {
-      nome: "Ingryd Aylana",
-      email: "ingrydaylana@gmail.com",
-      cpf: "33333333333",
-      celular: "98765-4321",
-      telefone: "3210-9876",
-      endereco: "Rua C, 300",
-      dataCriacao: Timestamp.now(),
-      dataAtualizacao: Timestamp.now(),
-      status: "A",
-      tipoUsuario: "produtor",
-      administradoraId: "adm_001",
-    });
+    for (const { id, data } of novosUsuarios) {
+      const userRef = doc(collection(db, "usuarios"), id);
+      batch.set(userRef, data);
+    }
 
-    // Milhagem com subcoleção de segurados
-    const milhagemRef = doc(
-      collection(db, "milhagemComissoes"),
-      "milhagem_001"
-    );
-    batch.set(milhagemRef, {
-      produtorUid: "user_001",
-      administradoraId: "adm_001",
-      numeroMilhagem: "MILHAGEM002",
-      percentualComissao: 2.7,
-      valorComissao: 295.0,
-      premioLiquido: 280.0,
-      premioBruto: 300.0,
-      descontoComissao: 5.0,
-      quantidadeSegurados: 1,
-      obs: "Comissão de hospedagem de março.",
-      dataCriacao: Timestamp.now(),
-      dataAtualizacao: Timestamp.now(),
-      status: "A",
-    });
+    // ---------- Milhagem + Segurados ----------
+    const novasMilhagens = [
+      {
+        id: "milhagem_001",
+        milhagem: {
+          produtorUid: "l4VYEXWSchVkFWzYgaljuvfiNgy2",
+          administradoraId: "BBZ",
+          numeroMilhagem: "MILHAGEM001",
+          percentualComissao: 2.7,
+          valorComissao: 607.65,
+          premioLiquido: 22505.57,
+          premioBruto: 24166.48,
+          descontoComissao: 0.0,
+          quantidadeSegurados: 2,
+          obs: "Comissão Maio",
+          dataCriacao: Timestamp.now(),
+          dataAtualizacao: Timestamp.now(),
+          status: "A",
+        },
+        segurados: [
+          {
+            id: "CONDOMINIO JARDINS DO BRASIL",
+            data: {
+              segurado: "CONDOMINIO JARDINS DO BRASIL",
+              apolice: "202521160033841",
+              endosso: "",
+              nossoNumero: "10768",
+              ramo: "COND",
+              seguradora: "ALLI",
+              tipo: "N",
+              statusSegurado: "A",
+              statusDoc: "Ativo",
+              dtProposta: Timestamp.fromDate(new Date("2025-05-28T21:00:00")),
+              dtPrev: Timestamp.fromDate(new Date("2025-05-28T21:00:00")),
+              inicioVig: Timestamp.fromDate(new Date("2025-05-28T21:00:00")),
+              fimVig: Timestamp.fromDate(new Date("2026-05-28T21:00:00")),
+              parc: "1/6",
+              baseRepasse: "liquido",
+              percentParticipacao: 100,
+              percentRepasse: 2.7,
+              prLiqParc: 11532.92,
+              vlBase: 11532.92,
+              vlRepasse: 311.39,
+              canceladoSegurado: false,
+              obsSegurado: "",
+              userImportou: "BBZ",
+            },
+          },
+          {
+            id: "COND JARDINS DO BRASIL - ATLANTICA",
+            data: {
+              segurado: "COND JARDINS DO BRASIL - ATLANTICA",
+              apolice: "202521160035393",
+              endosso: "",
+              nossoNumero: "10906",
+              ramo: "COND",
+              seguradora: "ALLI",
+              tipo: "N",
+              statusSegurado: "A",
+              statusDoc: "Ativo",
+              dtProposta: Timestamp.fromDate(new Date("2025-05-29T21:00:00")),
+              dtPrev: Timestamp.fromDate(new Date("2025-05-29T21:00:00")),
+              inicioVig: Timestamp.fromDate(new Date("2025-05-29T21:00:00")),
+              fimVig: Timestamp.fromDate(new Date("2026-05-29T21:00:00")),
+              parc: "1/6",
+              baseRepasse: "liquido",
+              percentParticipacao: 100,
+              percentRepasse: 2.7,
+              prLiqParc: 10972.65,
+              vlBase: 10972.65,
+              vlRepasse: 296.26,
+              canceladoSegurado: false,
+              obsSegurado: "",
+              userImportou: "BBZ",
+            },
+          },
+        ],
+      },
+      // adicione outras milhagens aqui...
+    ];
+
+    for (const { id, milhagem, segurados } of novasMilhagens) {
+      const milhagemRef = doc(collection(db, "milhagemComissoes"), id);
+      batch.set(milhagemRef, milhagem);
+
+      for (const { id: segId, data } of segurados) {
+        const segRef = doc(collection(milhagemRef, "segurados"), segId);
+        await setDoc(segRef, data);
+      }
+    }
 
     await batch.commit();
-    console.log("Batch principal finalizado.");
-
-    // Inserção fora do batch: subcoleção 'segurados'
-    const seguradoRef = doc(
-      collection(milhagemRef, "segurados"),
-      "segurado_001"
-    );
-    await setDoc(seguradoRef, {
-      segurado: "Cliente C",
-      apolice: "APOLICE003",
-      endosso: "ENDOSSO003",
-      nossoNumero: "N2-11223",
-      ramo: "Saúde",
-      seguradora: "Seguradora Z",
-      tipo: "N",
-      statusSegurado: "A",
-      statusDoc: "Ativo",
-      dtProposta: Timestamp.fromDate(new Date("2024-02-29T21:00:00")),
-      dtPrev: Timestamp.fromDate(new Date("2024-04-04T21:00:00")),
-      inicioVig: Timestamp.fromDate(new Date("2024-03-04T21:00:00")),
-      fimVig: Timestamp.fromDate(new Date("2025-03-04T21:00:00")),
-      parc: "1/6",
-      baseRepasse: "Bruto",
-      percentParticipacao: 8,
-      percentRepasse: 4,
-      prLiqParc: 100,
-      vlBase: 2000,
-      vlRepasse: 80,
-      canceladoSegurado: false,
-      obsSegurado: "Novo cliente.",
-      userImportou: "user_001",
-    });
-
-    console.log("Segurado adicionado com sucesso.");
+    console.log("Novos dados inseridos com sucesso.");
   } catch (error) {
-    console.error("Erro durante o seed:", error);
+    console.error("Erro ao inserir novos dados:", error);
   } finally {
     process.exit();
   }
 }
 
-seedFirestore();
+seedNovosDados();
