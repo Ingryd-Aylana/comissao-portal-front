@@ -65,10 +65,24 @@ export default function RelatoriosPage() {
 
   const handleDownload = async (index, type) => {
     setDownloading({ [`${index}-${type}`]: true });
+
     try {
-      // TODO: Implementar lógica real de download
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      // Aqui você implementará a lógica real de download dos relatórios
+      // Define o nome do arquivo padrão sem o nome do produtor
+      const nomeArquivo =
+        type === "pdf"
+          ? "relatorio-milhagem.pdf"
+          : "relatorio-milhagem.xlsx";
+
+      // Caminho relativo ao public/
+      const url = `/relatorios/${nomeArquivo}`;
+
+      // Criar elemento <a> para simular o download
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (err) {
       console.error(`Erro ao baixar relatório ${type}:`, err);
     } finally {

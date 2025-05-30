@@ -102,11 +102,11 @@ const Sidebar = () => {
                 <FaChartPie className="icon" /> DASHBOARD
               </Link>
             </li>
-            <li className={location.pathname === "/milhagens" ? "active" : ""}>
+            {/* <li className={location.pathname === "/milhagens" ? "active" : ""}>
               <Link to="/milhagens" onClick={handleMenuClick}>
                 <FaMoneyBillWave className="icon" /> MINHAS COMISSÕES
               </Link>
-            </li>
+            </li> */}
             <li className={location.pathname === "/relatorios" ? "active" : ""}>
               <Link to="/relatorios" onClick={handleMenuClick}>
                 <FaFileAlt className="icon" /> RELATÓRIOS
