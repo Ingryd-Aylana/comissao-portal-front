@@ -4,13 +4,10 @@ import ModalNovoUsuario from "./ModalNovoUsuario";
 import "../../components/styles/UsuariosPage.css";
 import { Plus, Search } from "lucide-react";
 import { getAllUsers, searchUsers } from "../../services/userService";
-import { auth } from "../../config/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../config/firebase";
-import { useNavigate } from "react-router-dom";
+import { useAdminProtection } from "../../hooks/useAdminProtection";
 
 const UsuariosPage = () => {
+  const { loading: authLoading, error: authError } = useAdminProtection();
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
@@ -18,64 +15,24 @@ const UsuariosPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searching, setSearching] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAdminAndLoadData = async () => {
-      try {
-        setLoading(true);
-        const user = auth.currentUser;
-
-        if (!user) {
-          navigate("/login");
-          return;
-        }
-
-        // Verificar se o usuário é admin
-        const userRef = collection(db, "usuarios");
-        const q = query(
-          userRef,
-          where("uid", "==", user.uid),
-          where("tipoUsuario", "==", "admin")
-        );
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-          setError("Acesso não autorizado");
-          navigate("/");
-          return;
-        }
-
-        // Carregar usuários
-        await loadUsers();
-      } catch (err) {
-        console.error("Erro ao carregar dados:", err);
-        setError("Erro ao carregar dados. Por favor, tente novamente.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        checkAdminAndLoadData();
-      } else {
-        navigate("/login");
-      }
-    });
-
-    return () => unsubscribe();
-  }, [navigate]);
+    if (!authLoading && !authError) {
+      loadUsers();
+    }
+  }, [authLoading, authError]);
 
   const loadUsers = async () => {
     try {
+      setLoading(true);
       const data = await getAllUsers();
       setUsuarios(data);
       setError(null);
     } catch (err) {
       console.error("Erro ao carregar usuários:", err);
       setError("Erro ao carregar usuários. Por favor, tente novamente.");
-      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,10 +75,18 @@ const UsuariosPage = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="loading-container">
         <p>Carregando usuários...</p>
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div className="error-container">
+        <p>{authError}</p>
       </div>
     );
   }

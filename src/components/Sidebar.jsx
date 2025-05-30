@@ -28,6 +28,8 @@ const Sidebar = () => {
         setUserData(data);
       } catch (error) {
         console.error("Erro ao carregar dados do usuário:", error);
+        // Se houver erro ao carregar dados do usuário, fazer logout
+        handleLogout();
       } finally {
         setLoading(false);
       }
@@ -117,7 +119,7 @@ const Sidebar = () => {
             </li>
 
             {/* Mostrar links de admin apenas se o usuário tiver permissão */}
-            {userData?.tipoUsuarioRef?.includes("admin") && (
+            {userData?.tipoUsuario === "admin" && (
               <>
                 <li
                   className={

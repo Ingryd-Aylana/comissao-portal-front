@@ -19,9 +19,34 @@ import {
   updatePassword,
 } from "firebase/auth";
 
+// Função para verificar se o usuário atual é admin
+export const checkAdminPermission = async () => {
+  try {
+    if (!auth.currentUser) {
+      throw new Error("Usuário não autenticado");
+    }
+
+    const userDoc = await getDoc(doc(db, "usuarios", auth.currentUser.uid));
+    if (!userDoc.exists()) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    const userData = userDoc.data();
+    if (userData.tipoUsuario !== "admin") {
+      throw new Error("Acesso não autorizado");
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao verificar permissões:", error);
+    throw error;
+  }
+};
+
 // Função para obter todos os usuários
 export const getAllUsers = async () => {
   try {
+    await checkAdminPermission();
     const usersRef = collection(db, "usuarios");
     const querySnapshot = await getDocs(usersRef);
     return querySnapshot.docs.map((doc) => ({
@@ -39,6 +64,8 @@ export const getAllUsers = async () => {
 // Função para criar um novo usuário
 export const createUser = async (userData) => {
   try {
+    await checkAdminPermission();
+
     // Criar usuário no Authentication
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -58,7 +85,8 @@ export const createUser = async (userData) => {
     };
 
     // Salvar no Firestore usando setDoc com o uid como ID do documento
-    await setDoc(doc(db, "usuarios", userCredential.user.uid), userDoc);
+    const userRef = doc(db, "usuarios", userCredential.user.uid);
+    await setDoc(userRef, userDoc);
 
     return userCredential.user.uid;
   } catch (error) {
@@ -97,6 +125,7 @@ export const getUserByUid = async (uid) => {
 // Função para atualizar um usuário
 export const updateUser = async (userId, userData) => {
   try {
+    await checkAdminPermission();
     const userDoc = await getDoc(doc(db, "usuarios", userId));
     if (!userDoc.exists()) {
       throw new Error("Usuário não encontrado");
@@ -129,18 +158,19 @@ export const updateUser = async (userId, userData) => {
 // Função para deletar um usuário
 export const deleteUserById = async (userId) => {
   try {
+    await checkAdminPermission();
     const userDoc = await getDoc(doc(db, "usuarios", userId));
     if (!userDoc.exists()) {
       throw new Error("Usuário não encontrado");
     }
 
-    // Deletar do Firestore primeiro
-    await deleteDoc(doc(db, "usuarios", userId));
-
-    // Tentar deletar do Authentication se possível
-    if (auth.currentUser && auth.currentUser.uid === userId) {
+    // Deletar usuário do Authentication
+    if (auth.currentUser) {
       await deleteUser(auth.currentUser);
     }
+
+    // Deletar do Firestore
+    await deleteDoc(doc(db, "usuarios", userId));
   } catch (error) {
     console.error("Erro ao deletar usuário:", error);
     throw error;
@@ -150,6 +180,7 @@ export const deleteUserById = async (userId) => {
 // Função para buscar usuários por termo
 export const searchUsers = async (searchTerm) => {
   try {
+    await checkAdminPermission();
     const usersRef = collection(db, "usuarios");
     const querySnapshot = await getDocs(usersRef);
 
@@ -176,6 +207,7 @@ export const searchUsers = async (searchTerm) => {
 // Função para obter estatísticas dos usuários
 export const getUserStats = async () => {
   try {
+    await checkAdminPermission();
     const usersRef = collection(db, "usuarios");
     const milhagensRef = collection(db, "milhagensComissoes");
 

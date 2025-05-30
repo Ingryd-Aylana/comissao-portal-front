@@ -2,13 +2,10 @@ import React, { useState, useEffect } from "react";
 import { BarChart2, Users, DollarSign } from "lucide-react";
 import "../../components/styles/DashboardMaster.css";
 import { getUserStats } from "../../services/userService";
-import { auth } from "../../config/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../config/firebase";
-import { useNavigate } from "react-router-dom";
+import { useAdminProtection } from "../../hooks/useAdminProtection";
 
 export default function DashboardMaster() {
+  const { loading: authLoading, error: authError } = useAdminProtection();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
@@ -17,56 +14,26 @@ export default function DashboardMaster() {
     produtoresAtivos: 0,
     rankingProdutores: [],
   });
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAdminAndLoadData = async () => {
-      try {
-        setLoading(true);
-        const user = auth.currentUser;
+    if (!authLoading && !authError) {
+      loadStats();
+    }
+  }, [authLoading, authError]);
 
-        if (!user) {
-          navigate("/login");
-          return;
-        }
-
-        // Verificar se o usuário é admin
-        const userRef = collection(db, "usuarios");
-        const q = query(
-          userRef,
-          where("uid", "==", user.uid),
-          where("tipoUsuario", "==", "admin")
-        );
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-          setError("Acesso não autorizado");
-          navigate("/");
-          return;
-        }
-
-        // Carregar estatísticas
-        const statsData = await getUserStats();
-        setStats(statsData);
-        setError(null);
-      } catch (err) {
-        console.error("Erro ao carregar dados:", err);
-        setError("Erro ao carregar dados. Por favor, tente novamente.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        checkAdminAndLoadData();
-      } else {
-        navigate("/login");
-      }
-    });
-
-    return () => unsubscribe();
-  }, [navigate]);
+  const loadStats = async () => {
+    try {
+      setLoading(true);
+      const data = await getUserStats();
+      setStats(data);
+      setError(null);
+    } catch (err) {
+      console.error("Erro ao carregar estatísticas:", err);
+      setError("Erro ao carregar dados. Por favor, tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -75,10 +42,18 @@ export default function DashboardMaster() {
     }).format(value);
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="loading-container">
         <p>Carregando dados...</p>
+      </div>
+    );
+  }
+
+  if (authError) {
+    return (
+      <div className="error-container">
+        <p>{authError}</p>
       </div>
     );
   }
