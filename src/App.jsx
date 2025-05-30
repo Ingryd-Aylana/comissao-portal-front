@@ -9,6 +9,8 @@ import Login from "./pages/Login/Login";
 import Dashboard from "./pages/produtor/Dashboard";
 import RelatoriosPage from "./pages/produtor/RelatoriosPage";
 import PerfilPage from "./pages/produtor/PerfilPage";
+import MinhasComissoes from "./pages/MinhasComissoes";
+import MilhagemDetalhes from "./pages/MilhagemDetalhes";
 
 // Páginas usuário master
 import DashboardMaster from "./pages/master/DashboardMaster";
@@ -58,6 +60,22 @@ function App() {
         element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/milhagens"
+        element={
+          <PrivateRoute>
+            <MinhasComissoes />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/milhagem/:id"
+        element={
+          <PrivateRoute>
+            <MilhagemDetalhes />
           </PrivateRoute>
         }
       />
