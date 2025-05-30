@@ -1,0 +1,74 @@
+{
+  "usuarios": {
+    "user_001": {
+      "nome": "Ingryd Aylana",
+      "email": "ingrydaylana@gmail.com",
+      "cpf": "33333333333",
+      "celular": "98765-4321",
+      "telefone": "3210-9876",
+      "endereco": "Rua C, 300",
+      "dataCriacao": "2025-05-29T18:50:51Z",
+      "dataAtualizacao": "2025-05-29T18:50:51Z",
+      "status": "A",
+      "tipoUsuario": "produtor",
+      "administradoraId": "adm_001"
+    }
+  },
+  "administradoras": {
+    "adm_001": {
+      "nome": "BBZ",
+      "cpfCnpj": "12345678000199",
+      "responsavel": "Carlos Silva",
+      "email": "carlos.silva@admin.com",
+      "telefone": "9999-1111",
+      "endereco": "Rua A, 100",
+      "dataCriacao": "2025-05-29T18:50:51Z",
+      "dataAtualizacao": "2025-05-29T18:50:51Z",
+      "status": "A"
+    }
+  },
+  "milhagemComissoes": {
+    "milhagem_001": {
+      "produtorUid": "user_001",
+      "administradoraId": "adm_001",
+      "numeroMilhagem": "MILHAGEM002",
+      "percentualComissao": 2.7,
+      "valorComissao": 295.0,
+      "premioLiquido": 280.0,
+      "premioBruto": 300.0,
+      "descontoComissao": 5.0,
+      "quantidadeSegurados": 5,
+      "obs": "comissao de março antecipada",
+      "dataCriacao": "2025-05-29T18:50:51Z",
+      "dataAtualizacao": "2025-05-29T18:50:51Z",
+      "status": "A",
+      "segurados": {
+        "segurado_001": {
+          "segurado": "Cliente C",
+          "apolice": "APOLICE003",
+          "endosso": "ENDOSSO003",
+          "nossoNumero": "N2-11223",
+          "ramo": "Sa\u00fade",
+          "seguradora": "Seguradora Z",
+          "tipo": "N",
+          "statusSegurado": "A",
+          "statusDoc": "Ativo",
+          "dtProposta": "2024-02-29T21:00:00Z",
+          "dtPrev": "2024-04-04T21:00:00Z",
+          "inicioVig": "2024-03-04T21:00:00Z",
+          "fimVig": "2025-03-04T21:00:00Z",
+          "parc": "1/6",
+          "baseRepasse": "Bruto",
+          "percentParticipacao": 8,
+          "percentRepasse": 4,
+          "prLiqParc": 100,
+          "vlBase": 2000,
+          "vlRepasse": 80,
+          "canceladoSegurado": false,
+          "obsSegurado": "Novo cliente.",
+          "userImportou": "user2FirebaseUID"
+        }
+      }
+    }
+  }
+}

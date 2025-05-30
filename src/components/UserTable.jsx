@@ -1,23 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../components/styles/UserTable.css";
+import { getAllUsers, deleteUserById } from "../services/userService";
 
-const mockUsers = [
-  { id: 1, nome: "Michel Policeno", cpf: "123.456.789-00", email: "michel@email.com", status: "Ativo" },
-  { id: 2, nome: "Ingryd Aylana", cpf: "987.654.321-00", email: "ingryd@email.com", status: "Ativo" },
-  { id: 3, nome: "João Silva", cpf: "000.123.456-00", email: "joão@email.com", status: "Inativo" },
-];
-
-const UserTable = () => {
-  const [usuarios, setUsuarios] = useState(mockUsers);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [usuarioSelecionado, setUsuarioSelecionado] = useState(null);
-  const [mensagemSucesso, setMensagemSucesso] = useState("");
+const UserTable = ({ onEdit }) => {
+  const [usuarios, setUsuarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [usuarioParaExcluir, setUsuarioParaExcluir] = useState(null);
+  const [mensagemSucesso, setMensagemSucesso] = useState("");
 
-  const onEdit = (user) => {
-    setUsuarioSelecionado(user);
-    setIsEditModalOpen(true);
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllUsers();
+      setUsuarios(data);
+      setError(null);
+    } catch (err) {
+      console.error("Erro ao carregar usuários:", err);
+      setError("Erro ao carregar usuários. Por favor, tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onDelete = (user) => {
@@ -25,35 +33,44 @@ const UserTable = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmarExclusao = () => {
-    setUsuarios((prev) => prev.filter((u) => u.id !== usuarioParaExcluir.id));
-    setIsDeleteModalOpen(false);
-    setMensagemSucesso("Usuário excluído com sucesso!");
-    setUsuarioParaExcluir(null);
-
-    setTimeout(() => setMensagemSucesso(""), 3000);
+  const confirmarExclusao = async () => {
+    try {
+      await deleteUserById(usuarioParaExcluir.id);
+      setUsuarios((prev) => prev.filter((u) => u.id !== usuarioParaExcluir.id));
+      setMensagemSucesso("Usuário excluído com sucesso!");
+      setTimeout(() => setMensagemSucesso(""), 3000);
+    } catch (err) {
+      console.error("Erro ao excluir usuário:", err);
+      setError("Erro ao excluir usuário. Por favor, tente novamente.");
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setUsuarioParaExcluir(null);
+    }
   };
 
-  const handleSalvarEdicao = () => {
-    setUsuarios((prevUsuarios) =>
-      prevUsuarios.map((user) =>
-        user.id === usuarioSelecionado.id ? usuarioSelecionado : user
-      )
-    );
-    setIsEditModalOpen(false);
-    setUsuarioSelecionado(null);
-    setMensagemSucesso("Usuário salvo com sucesso!");
-    setTimeout(() => setMensagemSucesso(""), 3000);
-  };
+  if (loading) {
+    return <div className="loading">Carregando usuários...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
 
   return (
     <div className="user-table-wrapper">
+      {mensagemSucesso && (
+        <div className="mensagem-sucesso">{mensagemSucesso}</div>
+      )}
+      {error && <div className="error-message">{error}</div>}
+
       <table className="user-table">
         <thead>
           <tr className="user-table-header">
             <th>Nome</th>
             <th>CPF</th>
             <th>E-mail</th>
+            <th>Tipo</th>
             <th>Status</th>
             <th className="acoes">Ações</th>
           </tr>
@@ -65,9 +82,14 @@ const UserTable = () => {
               <td>{user.cpf}</td>
               <td>{user.email}</td>
               <td>
-                <span className={`status-badge ${user.status.toLowerCase()}`}>
+                <span className={`tipo-badge ${user.tipoUsuario}`}>
+                  {user.tipoUsuario === "admin" ? "Administrador" : "Produtor"}
+                </span>
+              </td>
+              <td>
+                <span className={`status-badge ${user.status}`}>
                   <span className="status-dot"></span>
-                  {user.status}
+                  {user.status === "ativo" ? "Ativo" : "Inativo"}
                 </span>
               </td>
               <td className="acoes">
@@ -85,84 +107,27 @@ const UserTable = () => {
         </tbody>
       </table>
 
-      {/* Modal de edição */}
-      {isEditModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Editar Usuário</h2>
-
-            <label>Nome</label>
-            <input
-              type="text"
-              value={usuarioSelecionado?.nome || ""}
-              onChange={(e) =>
-                setUsuarioSelecionado({ ...usuarioSelecionado, nome: e.target.value })
-              }
-            />
-
-            <label>CPF</label>
-            <input
-              type="text"
-              value={usuarioSelecionado?.cpf || ""}
-              onChange={(e) =>
-                setUsuarioSelecionado({ ...usuarioSelecionado, cpf: e.target.value })
-              }
-            />
-
-            <label>E-mail</label>
-            <input
-              type="email"
-              value={usuarioSelecionado?.email || ""}
-              onChange={(e) =>
-                setUsuarioSelecionado({ ...usuarioSelecionado, email: e.target.value })
-              }
-            />
-
-            <label>Status</label>
-            <select
-              value={usuarioSelecionado?.status || ""}
-              onChange={(e) =>
-                setUsuarioSelecionado({ ...usuarioSelecionado, status: e.target.value })
-              }
-            >
-              <option value="Ativo">Ativo</option>
-              <option value="Inativo">Inativo</option>
-            </select>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
-              <button className="btn-outline" onClick={() => setIsEditModalOpen(false)}>
-                Cancelar
-              </button>
-              <button className="btn-outline" onClick={handleSalvarEdicao}>
-                Salvar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Modal de confirmação de exclusão */}
       {isDeleteModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Confirmar Exclusão</h3>
-            <p>Tem certeza que deseja excluir o usuário <strong>{usuarioParaExcluir?.nome}</strong>?</p>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem" }} className="modal-button">
-              <button className="btn-outline" onClick={() => setIsDeleteModalOpen(false)}>
+            <p>
+              Tem certeza que deseja excluir o usuário{" "}
+              <strong>{usuarioParaExcluir?.nome}</strong>?
+            </p>
+            <div className="modal-actions">
+              <button
+                className="btn-outline"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
                 Cancelar
               </button>
-              <button className="btn-outline" onClick={confirmarExclusao}>
+              <button className="btn-danger" onClick={confirmarExclusao}>
                 Excluir
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Mensagem de sucesso */}
-      {mensagemSucesso && (
-        <div className="mensagem-sucesso">
-          {mensagemSucesso}
         </div>
       )}
     </div>
