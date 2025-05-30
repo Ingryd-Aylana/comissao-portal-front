@@ -179,7 +179,7 @@ export default function RelatoriosPage() {
                         )}
                       </button>
                     )}
-                    {relatorio.excel && (
+                    {/* {relatorio.excel && (
                       <button
                         className="btn-export excel"
                         onClick={() => handleDownload(index, "excel")}
@@ -193,7 +193,7 @@ export default function RelatoriosPage() {
                           </>
                         )}
                       </button>
-                    )}
+                    )} */}
                   </td>
                 </tr>
               ))}
