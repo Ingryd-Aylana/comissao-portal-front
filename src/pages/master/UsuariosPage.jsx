@@ -1,44 +1,152 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UserTable from "../../components/UserTable";
-import ModalNovoUsuario from "../master/ModalNovoUsuario";
+import ModalNovoUsuario from "./ModalNovoUsuario";
 import "../../components/styles/UsuariosPage.css";
 import { Plus, Search } from "lucide-react";
+import { getAllUsers, searchUsers } from "../../services/userService";
+import { auth } from "../../config/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../config/firebase";
+import { useNavigate } from "react-router-dom";
 
 const UsuariosPage = () => {
   const [showModal, setShowModal] = useState(false);
-  const [editData, setEditData] = useState(null); // Dados do usuário a ser editado
+  const [editData, setEditData] = useState(null);
+  const [usuarios, setUsuarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searching, setSearching] = useState(false);
+  const navigate = useNavigate();
 
-  // Abrir modal para novo usuário
+  useEffect(() => {
+    const checkAdminAndLoadData = async () => {
+      try {
+        setLoading(true);
+        const user = auth.currentUser;
+
+        if (!user) {
+          navigate("/login");
+          return;
+        }
+
+        // Verificar se o usuário é admin
+        const userRef = collection(db, "usuarios");
+        const q = query(
+          userRef,
+          where("uid", "==", user.uid),
+          where("tipoUsuario", "==", "admin")
+        );
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          setError("Acesso não autorizado");
+          navigate("/");
+          return;
+        }
+
+        // Carregar usuários
+        await loadUsers();
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+        setError("Erro ao carregar dados. Por favor, tente novamente.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        checkAdminAndLoadData();
+      } else {
+        navigate("/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
+
+  const loadUsers = async () => {
+    try {
+      const data = await getAllUsers();
+      setUsuarios(data);
+      setError(null);
+    } catch (err) {
+      console.error("Erro ao carregar usuários:", err);
+      setError("Erro ao carregar usuários. Por favor, tente novamente.");
+      throw err;
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      loadUsers();
+      return;
+    }
+
+    try {
+      setSearching(true);
+      const results = await searchUsers(searchTerm);
+      setUsuarios(results);
+      setError(null);
+    } catch (err) {
+      console.error("Erro na busca:", err);
+      setError("Erro ao buscar usuários. Por favor, tente novamente.");
+    } finally {
+      setSearching(false);
+    }
+  };
+
   const handleAddUser = () => {
     setEditData(null);
     setShowModal(true);
   };
 
-  // Abrir modal para edição de usuário
   const handleEditUser = (usuario) => {
     setEditData(usuario);
     setShowModal(true);
   };
 
-  // Excluir usuário com confirmação
-  const handleDeleteUser = (id) => {
-    const confirmar = window.confirm("Tem certeza que deseja excluir este usuário?");
-    if (confirmar) {
-      // Aqui você pode integrar com o backend (API DELETE)
-      console.log("Usuário excluído com ID:", id);
+  const handleSaveUser = async (userData) => {
+    try {
+      await loadUsers(); // Recarrega a lista após salvar
+      setShowModal(false);
+    } catch (err) {
+      console.error("Erro ao salvar usuário:", err);
+      setError("Erro ao salvar usuário. Por favor, tente novamente.");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <p>Carregando usuários...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="user-page">
       <div className="usuarios-page-container">
         <div className="logo-perfil">
-          <img src="/images/logo.png" alt="Logo" className="logo-img perfil-logo" />
+          <img
+            src="/images/logo.png"
+            alt="Logo"
+            className="logo-img perfil-logo"
+          />
         </div>
 
         <div className="usuarios-header">
           <h1 className="usuarios-title">Usuários Cadastrados</h1>
-          {/* Sessão para cadastrar novos usuários */}
           <button className="usuarios-button" onClick={handleAddUser}>
             <Plus className="icon" />
             Novo Usuário
@@ -50,31 +158,34 @@ const UsuariosPage = () => {
             type="text"
             placeholder="Buscar por nome, CPF ou e-mail..."
             className="usuarios-search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
           />
-          {/* busca de usuários cadastrados, buscar referência no banco de dados */}
-          <button className="usuarios-search-button">
+          <button
+            className="usuarios-search-button"
+            onClick={handleSearch}
+            disabled={searching}
+          >
             <Search className="icon" />
-            Buscar
+            {searching ? "Buscando..." : "Buscar"}
           </button>
         </div>
 
-        {/* Tabela mencionada vindo de outro arquivo */}
+        {error && <div className="error-message">{error}</div>}
+
         <UserTable
+          usuarios={usuarios}
           onEdit={handleEditUser}
-          onDelete={handleDeleteUser}
+          onDelete={loadUsers}
         />
       </div>
 
-      {/* Modal de criação/edição de usuário */}
       <ModalNovoUsuario
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         usuarioParaEditar={editData}
-        onSave={(dados) => {
-          // salvar novo usuário ou atualizar existente
-          console.log("Salvar usuário (criação ou edição)", dados);
-          setShowModal(false);
-        }}
+        onSave={handleSaveUser}
       />
     </div>
   );
