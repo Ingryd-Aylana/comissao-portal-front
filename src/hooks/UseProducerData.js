@@ -11,6 +11,7 @@ export default function useProducerData() {
   const [producerInfo, setProducerInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalSegurados, setTotalSegurados] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,30 +36,42 @@ export default function useProducerData() {
         // Calcular totais
         let totalPremioLiquido = 0;
         let totalComissao = 0;
+        let totalSegurados = 0;
 
         milhagens.forEach((milhagem) => {
           totalPremioLiquido += milhagem.premioLiquido || 0;
           totalComissao += milhagem.valorComissao || 0;
+          // Adicionar quantidade de segurados da sub-coleção
+          totalSegurados += milhagem.segurados?.length || 0;
         });
 
         setTotalSales(totalPremioLiquido);
         setTotalCommission(totalComissao);
+        setTotalSegurados(totalSegurados);
 
-        // Pegar as 3 comissões mais recentes
-        const recentMilhagens = milhagens
+        // Pegar os 3 segurados mais recentes de todas as milhagens
+        const allSegurados = milhagens.flatMap((milhagem) =>
+          (milhagem.segurados || []).map((segurado) => ({
+            ...segurado,
+            milhagemId: milhagem.id,
+            dataCriacao: milhagem.dataCriacao,
+          }))
+        );
+
+        const recentSegurados = allSegurados
           .sort((a, b) => b.dataCriacao - a.dataCriacao)
           .slice(0, 3)
-          .map((milhagem) => ({
-            policyHolder: milhagem.favorecido,
-            policyNumber: milhagem.numeroMilhagem,
-            startDate: milhagem.dataCriacao
-              ? new Date(milhagem.dataCriacao).toLocaleDateString("pt-BR")
+          .map((segurado) => ({
+            policyHolder: segurado.segurado,
+            policyNumber: segurado.apolice,
+            startDate: segurado.inicioVig
+              ? new Date(segurado.inicioVig).toLocaleDateString("pt-BR")
               : "",
-            netPremium: milhagem.premioLiquido || 0,
-            commission: milhagem.valorComissao || 0,
+            netPremium: segurado.prLiqParc || 0,
+            commission: segurado.vlRepasse || 0,
           }));
 
-        setRecentCommissions(recentMilhagens);
+        setRecentCommissions(recentSegurados);
       } catch (err) {
         setError(err.message);
         console.error("Erro ao carregar dados:", err);
@@ -68,6 +81,7 @@ export default function useProducerData() {
         setTotalCommission(0);
         setRecentCommissions([]);
         setProducerInfo({});
+        setTotalSegurados(0);
       } finally {
         setLoading(false);
       }
@@ -83,5 +97,6 @@ export default function useProducerData() {
     producerInfo,
     loading,
     error,
+    totalSegurados,
   };
 }
