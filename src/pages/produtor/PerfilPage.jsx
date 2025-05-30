@@ -209,8 +209,6 @@ export default function PerfilPage() {
           onClose={() => setShowModal(false)}
         />
       </div>
-
-      <Footer />
     </div>
   );
 }
