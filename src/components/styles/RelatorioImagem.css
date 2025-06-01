@@ -1,42 +1,45 @@
 .relatorio-imagem {
   width: 100%;
-  max-width: 1100px;
+  max-width: clamp(1100px, 90vw, 1440px);
   margin: 0 auto 2rem auto;
-  padding: 0 1rem;
+  padding: 0 2rem;
   box-sizing: border-box;
   display: flex;
   justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.relatorio-imagem img {
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  border-radius: 16px;
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+/* Responsividade refinada para tablets e celulares */
+@media (max-width: 768px) {
+  .relatorio-imagem {
+    padding: 0 1rem;
   }
 
   .relatorio-imagem img {
-    width: 100%;
-    height: auto;
-    max-height: 230px;
-    border-radius: 12px;
-    object-fit: cover;
-    display: block;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Mobile refinado */
-@media (max-width: 768px) {
-  .banner-card {
-    padding: 0 0.75rem;
-  }
-
-  .banner-card img {
     max-height: 200px;
-    border-radius: 10px;
+    border-radius: 12px;
   }
 }
 
 @media (max-width: 480px) {
-  .banner-card {
+  .relatorio-imagem {
     padding: 0 0.5rem;
   }
 
-  .banner-card img {
+  .relatorio-imagem img {
     max-height: 180px;
-    border-radius: 8px;
+    border-radius: 10px;
   }
 }
