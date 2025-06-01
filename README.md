@@ -100,8 +100,7 @@ npm install
 cd ../frontend
 npm install
 
-📂 Dados e Modelagem
-O Firebase Firestore armazena os seguintes dados:
+📂 Dados e Modelagem: O Firebase Firestore armazena os seguintes dados:
 
 Usuários:
 - Nome
@@ -135,10 +134,10 @@ Permissão (produtor | master):
 🧑‍💻 Desenvolvido por:
 
 Ingryd Aylana
-Desenvolvedora Front-End 
+Desenvolvedora Front-End | 
 Linkedin: www.linkedin.com/in/ingryd-aylana-silva-dos-santos-4a2701158
 
 Michel Policeno 
-Desenvolvedor Back-end
-Linkedin: https://www.linkedin.com/in/michel-policeno-85a866212
+Desenvolvedor Back-end |
+Linkedin: https://www.linkedin.com/in/michel-policeno-85a866212 | 
 GitHub: https://github.com/Michel-Policeno
