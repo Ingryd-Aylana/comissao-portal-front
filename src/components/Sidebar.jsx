@@ -153,19 +153,19 @@ const Sidebar = () => {
           </ul>
 
           {/* Seção do usuário */}
-          <div className="logout-section">
-            <div>
-              <p>
-                {loading
-                  ? "Carregando..."
-                  : capitalizeName(userData?.nome || "Usuário")}
-              </p>
-            </div>
+          <div className="logout-section" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+            <p style={{ textAlign: 'center' }}>
+              {loading
+                ? "Carregando..."
+                : capitalizeName(userData?.nome || "Usuário")}
+            </p>
+
             <button onClick={handleLogout} className="logout-btn">
               <LogOut size={20} />
               <span>Sair</span>
             </button>
           </div>
+
         </nav>
       </aside>
     </>
