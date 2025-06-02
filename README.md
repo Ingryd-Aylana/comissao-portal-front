@@ -133,11 +133,11 @@ Permissão (produtor | master):
 
 🧑‍💻 Desenvolvido por:
 
-Ingryd Aylana
+Ingryd Aylana | 
 Desenvolvedora Front-End | 
 Linkedin: www.linkedin.com/in/ingryd-aylana-silva-dos-santos-4a2701158
 
-Michel Policeno 
+Michel Policeno | 
 Desenvolvedor Back-end |
 Linkedin: https://www.linkedin.com/in/michel-policeno-85a866212 | 
 GitHub: https://github.com/Michel-Policeno
