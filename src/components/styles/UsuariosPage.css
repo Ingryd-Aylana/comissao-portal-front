@@ -1,7 +1,6 @@
 .user-page {
   padding: 1.5rem;
   min-height: 100vh;
-  background-color: #f8fafc;
 }
 
 .title {
@@ -272,6 +271,7 @@
   text-align: center;
 }
 
+
 @media (max-width: 640px) {
   .usuarios-header {
     flex-direction: column;
@@ -306,3 +306,5 @@
     width: 100%;
   }
 }
+
+
