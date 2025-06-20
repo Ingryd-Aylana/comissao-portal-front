@@ -162,6 +162,15 @@
   }
 }
 
+.print-container {
+  background: white;
+  color: black;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  width: 800px; /* largura fixa para a área do pdf */
+  box-sizing: border-box;
+}
+
 /* Ajuste extra para dispositivos muito pequenos */
 @media (max-width: 480px) {
   .btn-export {
