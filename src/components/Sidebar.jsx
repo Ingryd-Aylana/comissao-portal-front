@@ -76,6 +76,36 @@ const Sidebar = () => {
     return name?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
+  // Exibir loading enquanto carrega os dados do usuário
+  if (loading) {
+    return (
+      <>
+        <button
+          className="hamburger"
+          onClick={toggleSidebar}
+          aria-label="Abrir menu lateral"
+        >
+          <FaBars size={22} />
+        </button>
+
+        <aside ref={sidebarRef} className={`sidebar ${isOpen ? "open" : ""}`}>
+          <div className="logo">
+            <img
+              src="/images/logo2.png"
+              alt="Fedcorp Logo"
+              className="logo-img"
+            />
+          </div>
+          <nav className="sidebar-menu">
+            <p style={{ padding: "1rem", textAlign: "center" }}>
+              Carregando menu...
+            </p>
+          </nav>
+        </aside>
+      </>
+    );
+  }
+
   return (
     <>
       <button
@@ -97,28 +127,28 @@ const Sidebar = () => {
 
         <nav className="sidebar-menu">
           <ul>
-            <li className={location.pathname === "/dashboard" ? "active" : ""}>
-              <Link to="/dashboard" onClick={handleMenuClick}>
-                <FaChartPie className="icon" /> DASHBOARD
-              </Link>
-            </li>
-            <li className={location.pathname === "/milhagens" ? "active" : ""}>
-              <Link to="/milhagens" onClick={handleMenuClick}>
-                <FaMoneyBillWave className="icon" /> MINHAS COMISSÕES
-              </Link>
-            </li>
-            <li className={location.pathname === "/relatorios" ? "active" : ""}>
-              <Link to="/relatorios" onClick={handleMenuClick}>
-                <FaFileAlt className="icon" /> RELATÓRIOS
-              </Link>
-            </li>
-            <li className={location.pathname === "/perfil" ? "active" : ""}>
-              <Link to="/perfil" onClick={handleMenuClick}>
-                <FaUser className="icon" /> PERFIL
-              </Link>
-            </li>
+            {/* Menu para usuários tipo "produtor" */}
+            {userData?.tipoUsuario === "produtor" && (
+              <>
+                <li className={location.pathname === "/dashboard" ? "active" : ""}>
+                  <Link to="/dashboard" onClick={handleMenuClick}>
+                    <FaChartPie className="icon" /> DASHBOARD
+                  </Link>
+                </li>
+                <li className={location.pathname === "/relatorios" ? "active" : ""}>
+                  <Link to="/relatorios" onClick={handleMenuClick}>
+                    <FaFileAlt className="icon" /> RELATÓRIOS
+                  </Link>
+                </li>
+                <li className={location.pathname === "/perfil" ? "active" : ""}>
+                  <Link to="/perfil" onClick={handleMenuClick}>
+                    <FaUser className="icon" /> PERFIL
+                  </Link>
+                </li>
+              </>
+            )}
 
-            {/* Mostrar links de admin apenas se o usuário tiver permissão */}
+            {/* Menu para usuários tipo "admin" */}
             {userData?.tipoUsuario === "admin" && (
               <>
                 <li
@@ -131,18 +161,19 @@ const Sidebar = () => {
                   </Link>
                 </li>
                 <li
-                  className={
-                    location.pathname === "/master/usuariosPage" ? "active" : ""
-                  }
+                  className={location.pathname === "/master/usuariosPage" ? "active" : ""}
                 >
                   <Link to="/master/usuariosPage" onClick={handleMenuClick}>
                     PÁGINA DE USUÁRIOS
                   </Link>
                 </li>
+                <li className={location.pathname === "/master/milhagens" ? "active" : ""}>
+                  <Link to="/master/milhagens" onClick={handleMenuClick}>
+                    MINHAS COMISSÕES
+                  </Link>
+                </li>
                 <li
-                  className={
-                    location.pathname === "/master/uploadCard" ? "active" : ""
-                  }
+                  className={location.pathname === "/master/uploadCard" ? "active" : ""}
                 >
                   <Link to="/master/uploadCard" onClick={handleMenuClick}>
                     IMPORTAÇÃO DE PLANILHA
@@ -150,14 +181,16 @@ const Sidebar = () => {
                 </li>
               </>
             )}
+
           </ul>
 
           {/* Seção do usuário */}
-          <div className="logout-section" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-            <p style={{ textAlign: 'center' }}>
-              {loading
-                ? "Carregando..."
-                : capitalizeName(userData?.nome || "Usuário")}
+          <div
+            className="logout-section"
+            style={{ flexDirection: "column", alignItems: "flex-start" }}
+          >
+            <p style={{ textAlign: "center" }}>
+              {capitalizeName(userData?.nome || "Usuário")}
             </p>
 
             <button onClick={handleLogout} className="logout-btn">
@@ -165,7 +198,6 @@ const Sidebar = () => {
               <span>Sair</span>
             </button>
           </div>
-
         </nav>
       </aside>
     </>
