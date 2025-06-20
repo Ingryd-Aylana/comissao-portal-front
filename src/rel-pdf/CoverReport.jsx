@@ -17,15 +17,15 @@ export default function CoverReport({ dadosCapa }) {
   return (
     <section className="cover">
       <div className="cover-top">
-      <img
-        src="https://i.postimg.cc/WzGTSPr5/img-capa-9.jpg"
-        alt="Fundo do Relatório"
-        className="background-image"
-      />
+        <img
+          src="/images/img-capa-9.jpg"
+          alt="Fundo do Relatório"
+          className="background-image"
+        />
 
         {/* LOGO no topo da imagem */}
-       <img
-          src="https://i.postimg.cc/xCdzWtgG/logo2.png"
+        <img
+          src="/images/logo2.png"
           alt="Logo"
           className="cover-logo"
         />
@@ -56,7 +56,7 @@ export default function CoverReport({ dadosCapa }) {
           <p><strong>Total:</strong> R$ {Number(repasse).toLocaleString('pt-BR')}</p>
         </div>
         <div className='text'>
-          
+
           <p>
             ESTRATÉGIA E EXCELÊNCIA NA EXECUÇÃO GERAM CRESCIMENTO E VALOR.
           </p>

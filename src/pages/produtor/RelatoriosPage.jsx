@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../../components/styles/RelatoriosPage.css";
 import RelatorioImagem from "../../components/RelatorioImagem";
 import { FaFilePdf, FaFileExcel, FaSearch } from "react-icons/fa";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+
+import CoverReport from "../../rel-pdf/CoverReport";
+import DetailedReport from "../../rel-pdf/DetailedReport";
+
 import {
   getMilhagensDoUsuarioLogado,
   getCurrentUserFirestoreData,
@@ -13,7 +21,9 @@ export default function RelatoriosPage() {
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [producerName, setProducerName] = useState("");
+  const [producerData, setProducerData] = useState(null);
+
+  const printRef = useRef();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,7 +31,7 @@ export default function RelatoriosPage() {
         setLoading(true);
         // Buscar dados do usuário
         const userData = await getCurrentUserFirestoreData();
-        setProducerName(userData.nome || "");
+        setProducerData(userData);
 
         const milhagens = await getMilhagensDoUsuarioLogado();
 
@@ -39,12 +49,16 @@ export default function RelatoriosPage() {
               mes: mes.charAt(0).toUpperCase() + mes.slice(1),
               dataGeracao: data.toLocaleDateString("pt-BR"),
               milhagem: 0,
-              pdf: true,
-              excel: true,
+              detalhes: [],
+              premio: 0,
             };
           }
 
           acc[mesKey].milhagem += milhagem.valorComissao || 0;
+          acc[mesKey].detalhes.push(milhagem);
+          // Caso tenha campo premio em milhagem, soma aqui também
+          acc[mesKey].premio += milhagem.premio || 0;
+
           return acc;
         }, {});
 
@@ -71,58 +85,129 @@ export default function RelatoriosPage() {
     fetchData();
   }, []);
 
-  const handleDownload = async (index, type) => {
-    setDownloading({ [`${index}-${type}`]: true });
+  // Dados para a capa do PDF
+  const dadosCapa = {
+    produtor: producerData?.nome || "Não informado",
+    pagamento: producerData?.dadosPagamento || "Não informado",
+    contato: producerData?.telefone || "Não informado",
+    email: producerData?.email || "Não informado",
+    totalApolices: relatorios.length,
+    premio: relatorios.reduce((sum, r) => sum + (r.premio || 0), 0),
+    repasse: relatorios.reduce((sum, r) => sum + (r.milhagem || 0), 0),
+  };
+
+  // Função para gerar e baixar o PDF automaticamente
+  const handleDownloadPdf = async (index) => {
+    setDownloading((prev) => ({ ...prev, [`${index}-pdf`]: true }));
 
     try {
-      // Formatar o nome do produtor (remover espaços e caracteres especiais)
-      const formattedName = producerName
-        .replace(/\s+/g, "") // Remove espaços
+      const input = printRef.current;
+      if (!input) throw new Error("Referência para PDF não encontrada.");
+
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // Captura o conteúdo em alta resolução
+      const canvas = await html2canvas(input, { scale: 2 });
+      const imgData = canvas.toDataURL("image/png");
+
+      // Proporção da imagem no PDF
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgWidth = pdfWidth;
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Adiciona a primeira página
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      // Adiciona páginas extras enquanto sobrar conteúdo vertical
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      // Formata nome do produtor para nome do arquivo
+      const formattedName = (producerData?.nome || "usuario")
+        .replace(/\s+/g, "")
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, ""); // Remove acentos
+        .replace(/[\u0300-\u036f]/g, "");
 
-      // Define o nome do arquivo com o nome do produtor
-      const nomeArquivo =
-        type === "pdf"
-          ? `relatorio-milhagem-${formattedName}.pdf`
-          : `relatorio-milhagem-${formattedName}.xlsx`;
-
-      // Caminho relativo ao public/
-      const url = `/relatorios/${nomeArquivo}`;
-
-      // Criar elemento <a> para simular o download
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = nomeArquivo;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error(`Erro ao baixar relatório ${type}:`, err);
+      pdf.save(`relatorio-milhagem-${formattedName}.pdf`);
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
     } finally {
-      setDownloading({ [`${index}-${type}`]: false });
+      setDownloading((prev) => ({ ...prev, [`${index}-pdf`]: false }));
     }
   };
 
+
+  // Função para gerar e baixar Excel
+  const handleDownloadExcel = (index) => {
+    setDownloading({ [`${index}-excel`]: true });
+
+    try {
+      // Montar dados para Excel (exemplo: cabeçalho + detalhes)
+      const relatorio = relatorios[index];
+      const detalhes = relatorio.detalhes;
+
+      // Mapear dados para formato Excel
+      const dadosExcel = detalhes.map((item) => ({
+        "Data": new Date(item.dataCriacao).toLocaleDateString("pt-BR"),
+        "Comissão": item.valorComissao,
+        "Descrição": item.descricao || "",
+        // Adicione mais campos conforme necessário
+      }));
+
+      // Criar planilha e pasta de trabalho
+      const worksheet = XLSX.utils.json_to_sheet(dadosExcel);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório");
+
+      // Gerar arquivo Excel (xlsx)
+      const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+
+      // Criar blob e salvar arquivo
+      const blob = new Blob([wbout], {
+        type:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      // Formatar nome do arquivo
+      const formattedName = (producerData?.nome || "usuario")
+        .replace(/\s+/g, "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      saveAs(blob, `relatorio-milhagem-${formattedName}.xlsx`);
+    } catch (err) {
+      console.error("Erro ao gerar Excel:", err);
+    } finally {
+      setDownloading({ [`${index}-excel`]: false });
+    }
+  };
   const filteredRelatorios = relatorios.filter((relatorio) =>
     relatorio.mes.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) {
+  if (loading)
     return (
       <div className="loading-container">
         <p>Carregando relatórios...</p>
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <div className="error-container">
         <p>{error}</p>
       </div>
     );
-  }
 
   return (
     <div className="main">
@@ -151,7 +236,6 @@ export default function RelatoriosPage() {
                 <th>Exportar</th>
               </tr>
             </thead>
-
             <tbody>
               {filteredRelatorios.map((relatorio, index) => (
                 <tr key={index}>
@@ -164,36 +248,34 @@ export default function RelatoriosPage() {
                     }).format(relatorio.milhagem)}
                   </td>
                   <td>
-                    {relatorio.pdf && (
-                      <button
-                        className="btn-export pdf"
-                        onClick={() => handleDownload(index, "pdf")}
-                        disabled={downloading[`${index}-pdf`]}
-                      >
-                        {downloading[`${index}-pdf`] ? (
-                          "Baixando..."
-                        ) : (
-                          <>
-                            <FaFilePdf /> PDF
-                          </>
-                        )}
-                      </button>
-                    )}
-                    {/* {relatorio.excel && (
-                      <button
-                        className="btn-export excel"
-                        onClick={() => handleDownload(index, "excel")}
-                        disabled={downloading[`${index}-excel`]}
-                      >
-                        {downloading[`${index}-excel`] ? (
-                          "Baixando..."
-                        ) : (
-                          <>
-                            <FaFileExcel /> Excel
-                          </>
-                        )}
-                      </button>
-                    )} */}
+                    <button
+                      className="btn-export pdf"
+                      onClick={() => handleDownloadPdf(index)}
+                      disabled={downloading[`${index}-pdf`]}
+                    >
+                      {downloading[`${index}-pdf`] ? (
+                        "Baixando..."
+                      ) : (
+                        <>
+                          <FaFilePdf /> PDF
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      className="btn-export excel"
+                      onClick={() => handleDownloadExcel(index)}
+                      disabled={downloading[`${index}-excel`]}
+                      style={{ marginLeft: "8px" }}
+                    >
+                      {downloading[`${index}-excel`] ? (
+                        "Baixando..."
+                      ) : (
+                        <>
+                          <FaFileExcel /> Excel
+                        </>
+                      )}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -206,6 +288,15 @@ export default function RelatoriosPage() {
               : "Nenhum relatório disponível."}
           </p>
         )}
+
+        {/* Área oculta para captura do PDF */}
+        <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+          <div ref={printRef} className="print-container">
+            <CoverReport dadosCapa={dadosCapa} />
+            <DetailedReport dados={relatorios.flatMap((r) => r.detalhes || [])} />
+          </div>
+
+        </div>
       </div>
     </div>
   );

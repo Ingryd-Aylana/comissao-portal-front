@@ -19,7 +19,7 @@ export default function DetailedReport({ dados = [] }) {
       <header className="report-header">
         <div className="logo-box">
           <img
-            src="https://i.postimg.cc/xCdzWtgG/logo2.png"
+            src="/images/logo2.png"
             alt="Logo"
             className="logo-img"
           />
@@ -65,7 +65,7 @@ export default function DetailedReport({ dados = [] }) {
                 <td>{item["Apólice"] || "-"}</td>
                 <td>{dataFormatada}</td>
                 {/* <td>{item["Data Pagamento"] || "-"}</td> */}
-               
+
                 <td>
                   R${" "}
                   {Number(item["Pr. Líq. Parc."] || 0).toLocaleString("pt-BR")}
