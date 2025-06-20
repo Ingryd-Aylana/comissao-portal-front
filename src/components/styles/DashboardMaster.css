@@ -1,7 +1,6 @@
 .master-dashboard-container {
   padding: 1.5rem;
   min-height: 100vh;
-  background-color: #f8fafc;
 }
 
 .master-dashboard-title {
@@ -21,27 +20,29 @@
 }
 
 .master-card {
-  background-color: white;
+  background-color: #598cb1;
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  color: white;
 }
 
 .master-card .icon {
   color: #3b82f6;
   font-size: 1.5rem;
+  color: white;
 }
 
 .master-card .label {
-  color: #475569;
+  color: white;
   font-size: 0.875rem;
 }
 
 .master-card .value {
-  color: #1e293b;
+  color: white;
   font-size: 1.5rem;
   font-weight: 700;
 }
@@ -90,9 +91,9 @@
   padding: 1rem;
   text-align: left;
   font-weight: 600;
-  color: #475569;
+  color: white;
   border-bottom: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  background-color: #0F3D5D;
 }
 
 .master-dashboard-table td {
@@ -102,7 +103,7 @@
 }
 
 .master-dashboard-table tr:hover {
-  background-color: #f8fafc;
+  background-color: #598cb1;
 }
 
 .loading-container {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import "../components/styles/Comissoes.css";
 import { useNavigate } from "react-router-dom";
 import {
   getMilhagensDoUsuarioLogado,
@@ -15,7 +16,6 @@ const MinhasComissoes = () => {
   const [selectedMilhagem, setSelectedMilhagem] = useState(null);
   const navigate = useNavigate();
 
-  // Estado para o formulário de nova milhagem
   const [formData, setFormData] = useState({
     numeroMilhagem: "",
     favorecido: "",
@@ -29,7 +29,6 @@ const MinhasComissoes = () => {
     obs: "",
   });
 
-  // Carregar milhagens
   const loadMilhagens = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -48,7 +47,6 @@ const MinhasComissoes = () => {
     loadMilhagens();
   }, [loadMilhagens]);
 
-  // Handlers para o CRUD
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
@@ -104,12 +102,11 @@ const MinhasComissoes = () => {
     }
   };
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat("pt-BR", {
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(value);
-  };
 
   const formatDate = (date) => {
     if (!date) return "";
@@ -117,64 +114,58 @@ const MinhasComissoes = () => {
   };
 
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return <div className="loading">Carregando...</div>;
   }
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Minhas Comissões</h1>
+    <div className="container">
+      <div className="logo-perfil">
+          <img
+            src="/images/logo.png"
+            alt="Logo"
+            className="logo-img perfil-logo"
+          />
+        </div>
+      <div className="header">
+      
+        <h1 className="title">Comissões Pagas</h1>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="btn-primary"
         >
           Nova Comissão
         </button>
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert-error">{error}</div>}
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
+      <div className="table-wrapper">
+        <table className="table-comissoes">
           <thead>
             <tr>
-              <th className="px-4 py-2 border">Nº Milhagem</th>
-              <th className="px-4 py-2 border">Favorecido</th>
-              <th className="px-4 py-2 border">Administradora</th>
-              <th className="px-4 py-2 border">Qtd. Segurados</th>
-              <th className="px-4 py-2 border">Prêmio Bruto</th>
-              <th className="px-4 py-2 border">Valor Comissão</th>
-              <th className="px-4 py-2 border">Data Criação</th>
-              <th className="px-4 py-2 border">Ações</th>
+              <th>Nº Milhagem</th>
+              <th>Favorecido</th>
+              <th>Administradora</th>
+              <th className="text-center">Qtd. Segurados</th>
+              <th className="text-right">Prêmio Bruto</th>
+              <th className="text-right">Valor Comissão</th>
             </tr>
           </thead>
           <tbody>
             {milhagens.map((milhagem) => (
               <tr key={milhagem.id}>
-                <td className="px-4 py-2 border">{milhagem.numeroMilhagem}</td>
-                <td className="px-4 py-2 border">{milhagem.favorecido}</td>
-                <td className="px-4 py-2 border">{milhagem.administradora}</td>
-                <td className="px-4 py-2 border text-center">
-                  {milhagem.quantidadeSegurados}
-                </td>
-                <td className="px-4 py-2 border text-right">
-                  {formatCurrency(milhagem.premioBruto)}
-                </td>
-                <td className="px-4 py-2 border text-right">
-                  {formatCurrency(milhagem.valorComissao)}
-                </td>
-                <td className="px-4 py-2 border">
-                  {formatDate(milhagem.dataCriacao)}
-                </td>
-                <td className="px-4 py-2 border">
-                  <div className="flex gap-2 justify-center">
+                <td>{milhagem.numeroMilhagem}</td>
+                <td>{milhagem.favorecido}</td>
+                <td>{milhagem.administradora}</td>
+                <td className="text-center">{milhagem.quantidadeSegurados}</td>
+                <td className="text-right">{formatCurrency(milhagem.premioBruto)}</td>
+                <td className="text-right">{formatCurrency(milhagem.valorComissao)}</td>
+                <td>{formatDate(milhagem.dataCriacao)}</td>
+                <td>
+                  <div className="actions">
                     <button
                       onClick={() => navigate(`/milhagem/${milhagem.id}`)}
-                      className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                      className="btn-success"
                     >
                       Detalhes
                     </button>
@@ -183,13 +174,13 @@ const MinhasComissoes = () => {
                         setSelectedMilhagem(milhagem);
                         setShowModal(true);
                       }}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+                      className="btn-warning"
                     >
                       Editar
                     </button>
                     <button
                       onClick={() => handleDelete(milhagem.id)}
-                      className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                      className="btn-danger"
                     >
                       Excluir
                     </button>
@@ -201,59 +192,70 @@ const MinhasComissoes = () => {
         </table>
       </div>
 
-      {/* Modal para criar/editar milhagem */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
-            <h2 className="text-xl font-bold mb-4">
-              {selectedMilhagem ? "Editar Milhagem" : "Nova Milhagem"}
-            </h2>
-            <form onSubmit={handleCreate}>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1">Número da Milhagem</label>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>{selectedMilhagem ? "Editar Milhagem" : "Nova Milhagem"}</h2>
+            <form onSubmit={handleCreate} className="form-milhagem">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Número da Milhagem</label>
                   <input
                     type="text"
                     value={formData.numeroMilhagem}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        numeroMilhagem: e.target.value,
-                      })
+                      setFormData({ ...formData, numeroMilhagem: e.target.value })
                     }
-                    className="w-full border rounded px-2 py-1"
                     required
                   />
                 </div>
-                <div>
-                  <label className="block mb-1">Favorecido</label>
+                <div className="form-group">
+                  <label>Favorecido</label>
                   <input
                     type="text"
                     value={formData.favorecido}
                     onChange={(e) =>
                       setFormData({ ...formData, favorecido: e.target.value })
                     }
-                    className="w-full border rounded px-2 py-1"
                     required
                   />
                 </div>
-                {/* Adicione mais campos conforme necessário */}
+                <div className="form-group">
+                  <label>Valor</label>
+                  <input
+                    type="text"
+                    value={formData.valor}
+                    onChange={(e) =>
+                      setFormData({ ...formData, valor: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Data de Pagamento</label>
+                  <input
+                    type="text"
+                    value={formData.dtPagamento}
+                    onChange={(e) =>
+                      setFormData({ ...formData, dtPagamento: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                {/* Campos adicionais conforme necessário */}
               </div>
-              <div className="flex justify-end gap-2 mt-4">
+              <div className="form-actions">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     setSelectedMilhagem(null);
                   }}
-                  className="px-4 py-2 border rounded"
+                  className="btn-secondary"
                 >
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
+                <button type="submit" className="btn-primary">
                   {selectedMilhagem ? "Atualizar" : "Criar"}
                 </button>
               </div>

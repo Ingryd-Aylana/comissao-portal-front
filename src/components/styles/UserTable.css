@@ -19,7 +19,8 @@
   padding: 1rem;
   text-align: left;
   font-weight: 600;
-  color: #475569;
+  color: white;
+  background-color: #003d6b;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -30,7 +31,7 @@
 }
 
 .user-table-row:hover {
-  background-color: #f8fafc;
+  background-color: #598cb1;
 }
 
 .status-badge {
@@ -93,13 +94,13 @@
 
 .acoes-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   justify-content: flex-end;
 }
 
 .btn-outline {
   padding: 0.5rem 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #003d6b;
   border-radius: 8px;
   background-color: white;
   color: #475569;
@@ -110,7 +111,7 @@
 
 .btn-outline:hover {
   background-color: #f8fafc;
-  border-color: #cbd5e1;
+  border-color: #003d6b;
 }
 
 .btn-danger {

@@ -3,7 +3,7 @@ import UserTable from "../../components/UserTable";
 import ModalNovoUsuario from "./ModalNovoUsuario";
 import "../../components/styles/UsuariosPage.css";
 import { Plus, Search } from "lucide-react";
-import { getAllUsers, searchUsers } from "../../services/userService";
+import { getAllUsers, searchUsers, deleteUserById } from "../../services/userService";
 import { useAdminProtection } from "../../hooks/useAdminProtection";
 
 const UsuariosPage = () => {
@@ -15,6 +15,9 @@ const UsuariosPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searching, setSearching] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [usuarioParaExcluir, setUsuarioParaExcluir] = useState(null);
 
   useEffect(() => {
     if (!authLoading && !authError) {
@@ -65,13 +68,29 @@ const UsuariosPage = () => {
     setShowModal(true);
   };
 
-  const handleSaveUser = async (userData) => {
+  const handleSaveUser = async () => {
+    await loadUsers();
+    setShowModal(false);
+  };
+
+  const handleDeleteUser = (usuario) => {
+    setUsuarioParaExcluir(usuario);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmarExclusao = async () => {
     try {
-      await loadUsers(); // Recarrega a lista após salvar
-      setShowModal(false);
+      await deleteUserById(usuarioParaExcluir.id);
+      setUsuarios((prev) => prev.filter((u) => u.id !== usuarioParaExcluir.id));
+      setMensagemSucesso("Usuário excluído com sucesso!");
+      setTimeout(() => setMensagemSucesso(""), 3000);
     } catch (err) {
-      console.error("Erro ao salvar usuário:", err);
-      setError("Erro ao salvar usuário. Por favor, tente novamente.");
+      console.error("Erro ao excluir usuário:", err);
+      setError("Erro ao excluir usuário. Por favor, tente novamente.");
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setUsuarioParaExcluir(null);
     }
   };
 
@@ -87,14 +106,6 @@ const UsuariosPage = () => {
     return (
       <div className="error-container">
         <p>{authError}</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="error-container">
-        <p>{error}</p>
       </div>
     );
   }
@@ -137,12 +148,13 @@ const UsuariosPage = () => {
           </button>
         </div>
 
+        {mensagemSucesso && <div className="mensagem-sucesso">{mensagemSucesso}</div>}
         {error && <div className="error-message">{error}</div>}
 
         <UserTable
           usuarios={usuarios}
           onEdit={handleEditUser}
-          onDelete={loadUsers}
+          onDelete={handleDeleteUser}
         />
       </div>
 
@@ -152,6 +164,28 @@ const UsuariosPage = () => {
         usuarioParaEditar={editData}
         onSave={handleSaveUser}
       />
+
+      {isDeleteModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Confirmar Exclusão</h3>
+            <p>
+              Tem certeza que deseja excluir o usuário{" "}
+              <strong>{usuarioParaExcluir?.nome}</strong>?
+            </p>
+            <td className="acoes">
+              <div className="acoes-buttons">
+                <button className="btn-outline" onClick={() => handleEdit(user)}>
+                  Editar
+                </button>
+                <button className="btn-danger" onClick={() => handleDelete(user)}>
+                  Excluir
+                </button>
+              </div>
+            </td>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
