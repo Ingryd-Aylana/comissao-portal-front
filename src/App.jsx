@@ -4,17 +4,19 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./config/firebase";
 import Sidebar from "./components/Sidebar";
 import Login from "./pages/Login/Login";
+import AdminRoute from "./routes/AdminRoute";
 
 // Páginas usuário comum
 import Dashboard from "./pages/produtor/Dashboard";
 import RelatoriosPage from "./pages/produtor/RelatoriosPage";
 import PerfilPage from "./pages/produtor/PerfilPage";
-import MinhasComissoes from "./pages/MinhasComissoes";
+
 import MilhagemDetalhes from "./pages/MilhagemDetalhes";
 
 // Páginas usuário master
 import DashboardMaster from "./pages/master/DashboardMaster";
 import RelatoriosProdutoresPage from "./pages/master/RelatoriosProdutoresPage";
+import MinhasComissoes from "./pages/MinhasComissoes";
 import UsuariosPage from "./pages/master/UsuariosPage";
 import UploadCard from "./pages/master/UploadCard";
 // import PerfilMasterPage from './pages/master/PerfilPage';
@@ -64,14 +66,6 @@ function App() {
         }
       />
       <Route
-        path="/milhagens"
-        element={
-          <PrivateRoute>
-            <MinhasComissoes />
-          </PrivateRoute>
-        }
-      />
-      <Route
         path="/milhagem/:id"
         element={
           <PrivateRoute>
@@ -100,35 +94,46 @@ function App() {
       <Route
         path="/master/dashboard"
         element={
-          <PrivateRoute>
+          <AdminRoute>
             <DashboardMaster />
-          </PrivateRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/master/relatoriosProdutoresPage"
         element={
-          <PrivateRoute>
+          <AdminRoute>
             <RelatoriosProdutoresPage />
-          </PrivateRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/master/usuariosPage"
         element={
-          <PrivateRoute>
+          <AdminRoute>
             <UsuariosPage />
-          </PrivateRoute>
+          </AdminRoute>
         }
       />
+
+      <Route
+        path="/master/milhagens"
+        element={
+          <AdminRoute>
+            <MinhasComissoes />
+          </AdminRoute>
+        }
+      />
+
       <Route
         path="/master/uploadCard"
         element={
-          <PrivateRoute>
+          <AdminRoute>
             <UploadCard />
-          </PrivateRoute>
+          </AdminRoute>
         }
       />
+
       {/* <Route path="/master/perfil" element={<PerfilMasterPage />} /> */}
     </Routes>
   );
