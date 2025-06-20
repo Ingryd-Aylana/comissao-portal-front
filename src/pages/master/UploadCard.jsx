@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import "../../components/styles/UploadCard.css";
-import { FaFileExcel, FaUpload, FaPaperPlane, FaUser } from "react-icons/fa";
-import { getAllUsers } from "../../services/userService"; // Supondo que retorna lista de produtores
+import { FaFileExcel, FaUpload, FaPaperPlane } from "react-icons/fa";
+import { getAllProdutores } from "../../services/userService";
 
 export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
   const [fileName, setFileName] = useState("");
@@ -12,14 +12,14 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
   const [isSending, setIsSending] = useState(false);
 
   const [produtores, setProdutores] = useState([]);
+  const [inputBusca, setInputBusca] = useState("");
   const [produtorSelecionado, setProdutorSelecionado] = useState("");
 
   useEffect(() => {
     async function carregarProdutores() {
       try {
-        const usuarios = await getAllUsers();
-        const apenasProdutores = usuarios.filter(u => u.tipo === "produtor");
-        setProdutores(apenasProdutores);
+        const produtoresAtivos = await getAllProdutores();
+        setProdutores(produtoresAtivos);
       } catch (err) {
         setError("Erro ao carregar produtores.");
       }
@@ -59,6 +59,15 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
     reader.readAsArrayBuffer(file);
   };
 
+  const handleSelectProdutor = (produtor) => {
+    setInputBusca(`${produtor.nome} (${produtor.email})`);
+    setProdutorSelecionado(produtor.id);
+  };
+
+  const produtoresFiltrados = produtores.filter((p) =>
+    `${p.nome} ${p.email}`.toLowerCase().includes(inputBusca.toLowerCase())
+  );
+
   const handleSendSpreadsheet = async () => {
     setIsSending(true);
     setError("");
@@ -97,22 +106,33 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
           Importar Arquivo Excel
         </h2>
 
-        {/* Seleção de Produtor */}
+        {/* Busca de Produtor com Autocomplete */}
         <div className="upload-select-produtor">
-          <label htmlFor="select-produtor">Selecione o produtor:</label>
-          <select
-            id="select-produtor"
+          <label htmlFor="busca-produtor">Selecione o produtor:</label>
+          <input
+            type="text"
+            id="busca-produtor"
+            placeholder="Digite o nome ou e-mail..."
+            value={inputBusca}
+            onChange={(e) => {
+              setInputBusca(e.target.value);
+              setProdutorSelecionado(""); // limpa se usuário começar a digitar de novo
+            }}
             className="upload-produtor-dropdown"
-            value={produtorSelecionado}
-            onChange={(e) => setProdutorSelecionado(e.target.value)}
-          >
-            <option value="">-- Escolha um produtor --</option>
-            {produtores.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome} ({p.email})
-              </option>
-            ))}
-          </select>
+          />
+          {inputBusca && produtoresFiltrados.length > 0 && (
+            <ul className="autocomplete-list">
+              {produtoresFiltrados.map((p) => (
+                <li
+                  key={p.id}
+                  onClick={() => handleSelectProdutor(p)}
+                  className="autocomplete-item"
+                >
+                  {p.nome} ({p.email})
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Upload */}

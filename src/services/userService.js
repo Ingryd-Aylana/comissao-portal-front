@@ -19,22 +19,17 @@ import {
   updatePassword,
 } from "firebase/auth";
 
-// Função para verificar se o usuário atual é admin
+
+// Verifica se o usuário atual é admin
 export const checkAdminPermission = async () => {
   try {
-    if (!auth.currentUser) {
-      throw new Error("Usuário não autenticado");
-    }
+    if (!auth.currentUser) throw new Error("Usuário não autenticado");
 
     const userDoc = await getDoc(doc(db, "usuarios", auth.currentUser.uid));
-    if (!userDoc.exists()) {
-      throw new Error("Usuário não encontrado");
-    }
+    if (!userDoc.exists()) throw new Error("Usuário não encontrado");
 
     const userData = userDoc.data();
-    if (userData.tipoUsuario !== "admin") {
-      throw new Error("Acesso não autorizado");
-    }
+    if (userData.tipoUsuario !== "admin") throw new Error("Acesso não autorizado");
 
     return true;
   } catch (error) {
@@ -43,7 +38,7 @@ export const checkAdminPermission = async () => {
   }
 };
 
-// Função para obter todos os usuários
+// Busca todos os usuários
 export const getAllUsers = async () => {
   try {
     await checkAdminPermission();
@@ -61,19 +56,30 @@ export const getAllUsers = async () => {
   }
 };
 
-// Função para criar um novo usuário
+// Busca apenas produtores ativos
+export const getAllProdutores = async () => {
+  try {
+    const produtoresRef = collection(db, "usuarios");
+    // Se quiser todos os produtores, sem filtro de status, use apenas where tipoUsuario == "produtor"
+    const q = query(produtoresRef, where("tipoUsuario", "==", "produtor"));
+    const querySnapshot = await getDocs(q);
+    const produtores = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return produtores;
+  } catch (error) {
+    console.error("Erro ao buscar produtores:", error);
+    throw error;
+  }
+};
+
+// Cria um novo usuário
 export const createUser = async (userData) => {
   try {
     await checkAdminPermission();
+    const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.senha);
 
-    // Criar usuário no Authentication
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      userData.email,
-      userData.senha
-    );
-
-    // Preparar dados para o Firestore
     const { senha, ...userDataWithoutPassword } = userData;
     const userDoc = {
       ...userDataWithoutPassword,
@@ -84,14 +90,12 @@ export const createUser = async (userData) => {
       dataAtualizacao: Timestamp.now(),
     };
 
-    // Salvar no Firestore usando setDoc com o uid como ID do documento
     const userRef = doc(db, "usuarios", userCredential.user.uid);
     await setDoc(userRef, userDoc);
 
     return userCredential.user.uid;
   } catch (error) {
     console.error("Erro ao criar usuário:", error);
-    // Se houver erro, tentar limpar o usuário do Auth
     if (error.code !== "auth/email-already-in-use" && auth.currentUser) {
       try {
         await deleteUser(auth.currentUser);
@@ -103,13 +107,11 @@ export const createUser = async (userData) => {
   }
 };
 
-// Função para buscar usuário por UID
+// Busca usuário por UID
 export const getUserByUid = async (uid) => {
   try {
     const userDoc = await getDoc(doc(db, "usuarios", uid));
-    if (!userDoc.exists()) {
-      throw new Error("Usuário não encontrado");
-    }
+    if (!userDoc.exists()) throw new Error("Usuário não encontrado");
     return {
       id: userDoc.id,
       ...userDoc.data(),
@@ -122,28 +124,23 @@ export const getUserByUid = async (uid) => {
   }
 };
 
-// Função para atualizar um usuário
+// Atualiza um usuário
 export const updateUser = async (userId, userData) => {
   try {
     await checkAdminPermission();
     const userDoc = await getDoc(doc(db, "usuarios", userId));
-    if (!userDoc.exists()) {
-      throw new Error("Usuário não encontrado");
-    }
+    if (!userDoc.exists()) throw new Error("Usuário não encontrado");
 
     const currentData = userDoc.data();
 
-    // Se o email mudou, atualizar no Authentication
     if (userData.email && userData.email !== currentData.email) {
       await updateEmail(auth.currentUser, userData.email);
     }
 
-    // Se a senha foi fornecida, atualizar no Authentication
     if (userData.senha) {
       await updatePassword(auth.currentUser, userData.senha);
     }
 
-    // Preparar dados para atualização no Firestore
     const { senha, ...updateData } = userData;
     await updateDoc(doc(db, "usuarios", userId), {
       ...updateData,
@@ -155,21 +152,15 @@ export const updateUser = async (userId, userData) => {
   }
 };
 
-// Função para deletar um usuário
+// Deleta um usuário
 export const deleteUserById = async (userId) => {
   try {
     await checkAdminPermission();
     const userDoc = await getDoc(doc(db, "usuarios", userId));
-    if (!userDoc.exists()) {
-      throw new Error("Usuário não encontrado");
-    }
+    if (!userDoc.exists()) throw new Error("Usuário não encontrado");
 
-    // Deletar usuário do Authentication
-    if (auth.currentUser) {
-      await deleteUser(auth.currentUser);
-    }
+    if (auth.currentUser) await deleteUser(auth.currentUser);
 
-    // Deletar do Firestore
     await deleteDoc(doc(db, "usuarios", userId));
   } catch (error) {
     console.error("Erro ao deletar usuário:", error);
@@ -177,7 +168,7 @@ export const deleteUserById = async (userId) => {
   }
 };
 
-// Função para buscar usuários por termo
+// Busca usuários por termo
 export const searchUsers = async (searchTerm) => {
   try {
     await checkAdminPermission();
@@ -191,7 +182,6 @@ export const searchUsers = async (searchTerm) => {
       dataAtualizacao: doc.data().dataAtualizacao?.toDate(),
     }));
 
-    // Filtrar localmente por nome, CPF ou email
     return users.filter(
       (user) =>
         user.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -204,45 +194,35 @@ export const searchUsers = async (searchTerm) => {
   }
 };
 
-// Função para obter estatísticas dos usuários
+// Estatísticas dos usuários
 export const getUserStats = async () => {
   try {
     await checkAdminPermission();
     const usersRef = collection(db, "usuarios");
     const milhagensRef = collection(db, "milhagensComissoes");
 
-    // Buscar todos os usuários
     const usersSnapshot = await getDocs(usersRef);
-    const users = usersSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const users = usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-    // Buscar todas as milhagens
     const milhagensSnapshot = await getDocs(milhagensRef);
-    const milhagens = milhagensSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const milhagens = milhagensSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-    // Calcular estatísticas
     const produtoresAtivos = users.filter(
       (user) => user.tipoUsuario === "produtor" && user.status === "ativo"
     ).length;
 
     const totalSegurados = milhagens.reduce(
-      (total, milhagem) => total + (milhagem.quantidadeSegurados || 0),
+      (total, m) => total + (m.quantidadeSegurados || 0),
       0
     );
 
     const totalMilhagem = milhagens.reduce(
-      (total, milhagem) => total + (milhagem.valorComissao || 0),
+      (total, m) => total + (m.valorComissao || 0),
       0
     );
 
-    // Calcular ranking de produtores
     const produtoresComMilhagem = users
-      .filter((user) => user.tipoUsuario === "produtor")
+      .filter((u) => u.tipoUsuario === "produtor")
       .map((produtor) => {
         const milhagemProdutor = milhagens
           .filter((m) => m.produtorUid === produtor.uid)
@@ -256,7 +236,7 @@ export const getUserStats = async () => {
         };
       })
       .sort((a, b) => b.totalMilhagem - a.totalMilhagem)
-      .slice(0, 5); // Top 5 produtores
+      .slice(0, 5);
 
     return {
       produtoresAtivos,

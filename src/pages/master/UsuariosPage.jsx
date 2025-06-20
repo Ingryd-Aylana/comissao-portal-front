@@ -25,6 +25,7 @@ const UsuariosPage = () => {
     }
   }, [authLoading, authError]);
 
+  // Carrega todos os usuários
   const loadUsers = async () => {
     try {
       setLoading(true);
@@ -39,6 +40,7 @@ const UsuariosPage = () => {
     }
   };
 
+  // Busca usuários por nome, CPF ou e-mail
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
       loadUsers();
@@ -48,6 +50,8 @@ const UsuariosPage = () => {
     try {
       setSearching(true);
       const results = await searchUsers(searchTerm);
+      console.log("🔍 Termo buscado:", searchTerm);
+      console.log("✅ Resultados encontrados:", results);
       setUsuarios(results);
       setError(null);
     } catch (err) {
@@ -58,26 +62,40 @@ const UsuariosPage = () => {
     }
   };
 
+  // Abre modal para cadastro
   const handleAddUser = () => {
     setEditData(null);
     setShowModal(true);
   };
 
+  // Abre modal para edição
   const handleEditUser = (usuario) => {
     setEditData(usuario);
     setShowModal(true);
   };
 
-  const handleSaveUser = async () => {
-    await loadUsers();
+  // Salva novo usuário ou edição
+  const handleSaveUser = (usuarioSalvo) => {
+    if (editData) {
+      setUsuarios((prev) =>
+        prev.map((u) => (u.id === usuarioSalvo.id ? usuarioSalvo : u))
+      );
+      setMensagemSucesso("Usuário editado com sucesso!");
+    } else {
+      setUsuarios((prev) => [...prev, usuarioSalvo]);
+      setMensagemSucesso("Usuário criado com sucesso!");
+    }
+    setTimeout(() => setMensagemSucesso(""), 3000);
     setShowModal(false);
   };
 
+  // Prepara exclusão de usuário
   const handleDeleteUser = (usuario) => {
     setUsuarioParaExcluir(usuario);
     setIsDeleteModalOpen(true);
   };
 
+  // Confirma e executa exclusão
   const confirmarExclusao = async () => {
     try {
       await deleteUserById(usuarioParaExcluir.id);
@@ -151,11 +169,15 @@ const UsuariosPage = () => {
         {mensagemSucesso && <div className="mensagem-sucesso">{mensagemSucesso}</div>}
         {error && <div className="error-message">{error}</div>}
 
-        <UserTable
-          usuarios={usuarios}
-          onEdit={handleEditUser}
-          onDelete={handleDeleteUser}
-        />
+        {usuarios.length === 0 ? (
+          <div className="error-message">Nenhum usuário encontrado.</div>
+        ) : (
+          <UserTable
+            usuarios={usuarios}
+            onEdit={handleEditUser}
+            onDelete={handleDeleteUser}
+          />
+        )}
       </div>
 
       <ModalNovoUsuario
@@ -173,16 +195,14 @@ const UsuariosPage = () => {
               Tem certeza que deseja excluir o usuário{" "}
               <strong>{usuarioParaExcluir?.nome}</strong>?
             </p>
-            <td className="acoes">
-              <div className="acoes-buttons">
-                <button className="btn-outline" onClick={() => handleEdit(user)}>
-                  Editar
-                </button>
-                <button className="btn-danger" onClick={() => handleDelete(user)}>
-                  Excluir
-                </button>
-              </div>
-            </td>
+            <div className="modal-actions">
+              <button className="btn-cancelar" onClick={() => setIsDeleteModalOpen(false)}>
+                Cancelar
+              </button>
+              <button className="btn-danger" onClick={confirmarExclusao}>
+                Excluir
+              </button>
+            </div>
           </div>
         </div>
       )}

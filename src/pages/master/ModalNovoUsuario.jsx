@@ -96,11 +96,16 @@ const ModalNovoUsuario = ({
     try {
       if (usuarioParaEditar) {
         await updateUser(usuarioParaEditar.id, formData);
+        // Enviar objeto atualizado com id para o callback onSave
+        const usuarioAtualizado = { ...usuarioParaEditar, ...formData, id: usuarioParaEditar.id };
+        onSave(usuarioAtualizado);
       } else {
-        await createUser(formData);
+        const novoId = await createUser(formData);
+        // Enviar objeto novo usuário com id para o callback onSave
+        const novoUsuario = { ...formData, id: novoId };
+        onSave(novoUsuario);
       }
 
-      onSave(formData);
       onClose();
     } catch (err) {
       console.error("Erro ao salvar usuário:", err);
