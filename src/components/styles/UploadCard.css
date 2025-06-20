@@ -108,3 +108,26 @@
   font-size: 0.95rem;
   margin-top: 1rem;
 }
+
+.autocomplete-list {
+  background: white;
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 0;
+  padding-left: 0;
+  list-style: none;
+  position: absolute;
+  width: 100%;
+  z-index: 10;
+}
+
+.autocomplete-item {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.autocomplete-item:hover {
+  background-color: #f0f0f0;
+}
+
