@@ -83,7 +83,7 @@ export default function DashboardMaster() {
         <div className="master-card">
           <BarChart2 size={24} />
           <span className="label">
-            <strong>TOTAL DE SEGURADOS</strong>
+            <strong>TOTAL DE PRODUTORES</strong>
           </span>
           <span className="value">{stats.totalSegurados}</span>
         </div>
@@ -115,7 +115,7 @@ export default function DashboardMaster() {
           <table className="master-dashboard-table">
             <thead>
               <tr>
-                <th>ADMINISTRADOR</th>
+                <th>PRODUTOR</th>
                 <th>E-MAIL</th>
                 <th>MILHAGEM TOTAL</th>
               </tr>

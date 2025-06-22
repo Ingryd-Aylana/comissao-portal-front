@@ -20,6 +20,7 @@ import {
 } from "firebase/auth";
 
 
+
 // Verifica se o usuário atual é admin
 export const checkAdminPermission = async () => {
   try {
@@ -198,6 +199,7 @@ export const searchUsers = async (searchTerm) => {
 export const getUserStats = async () => {
   try {
     await checkAdminPermission();
+
     const usersRef = collection(db, "usuarios");
     const milhagensRef = collection(db, "milhagensComissoes");
 
@@ -207,20 +209,21 @@ export const getUserStats = async () => {
     const milhagensSnapshot = await getDocs(milhagensRef);
     const milhagens = milhagensSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
+    // Total de produtores ativos (status === ativo)
     const produtoresAtivos = users.filter(
       (user) => user.tipoUsuario === "produtor" && user.status === "ativo"
     ).length;
 
-    const totalSegurados = milhagens.reduce(
-      (total, m) => total + (m.quantidadeSegurados || 0),
-      0
-    );
+    // Total de produtores cadastrados (para o card "TOTAL DE PRODUTORES")
+    const totalSegurados = users.filter((user) => user.tipoUsuario === "produtor").length;
 
+    // Total de milhagem (soma das comissões)
     const totalMilhagem = milhagens.reduce(
       (total, m) => total + (m.valorComissao || 0),
       0
     );
 
+    // Ranking de produtores baseado em comissões
     const produtoresComMilhagem = users
       .filter((u) => u.tipoUsuario === "produtor")
       .map((produtor) => {
@@ -236,11 +239,11 @@ export const getUserStats = async () => {
         };
       })
       .sort((a, b) => b.totalMilhagem - a.totalMilhagem)
-      .slice(0, 5);
+      .slice(0, 5); // Top 5
 
     return {
       produtoresAtivos,
-      totalSegurados,
+      totalSegurados, // usado no front como "Total de Produtores"
       totalMilhagem,
       rankingProdutores: produtoresComMilhagem,
     };
@@ -249,3 +252,5 @@ export const getUserStats = async () => {
     throw error;
   }
 };
+
+
