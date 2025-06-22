@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../config/firebase";
+import { auth, db } from "../../config/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 
@@ -8,18 +9,39 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Função para lidar com o envio do formulário
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/dashboard");
+      // Autenticar com Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Buscar dados do usuário no Firestore
+      const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+      if (!userDoc.exists()) {
+        throw new Error("Usuário não encontrado no Firestore.");
+      }
+
+      const userData = userDoc.data();
+
+      // Redirecionar com base no tipo de usuário
+      if (userData.tipoUsuario === "admin") {
+        navigate("/master/DashboardMaster");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
-      setError("Falha no login. Por favor, verifique suas credenciais.");
-      console.error("Error:", error.message);
+      console.error("Erro ao logar:", error);
+      setError("Falha no login. Verifique suas credenciais.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -30,6 +52,7 @@ const Login = () => {
       <div className={styles["login-wrapper"]}>
         <div className={styles["loginContainer"]}>
           <div className={styles["loginBox"]}>
+            {/* Logo */}
             <img
               src="/images/logo.png"
               alt="Fedcorp Logo"
@@ -41,8 +64,10 @@ const Login = () => {
               Insira seus dados para acessar a plataforma
             </p>
 
+            {/* Exibir erro de autenticação */}
             {error && <p className={styles.error}>{error}</p>}
 
+            {/* Formulário de login */}
             <form onSubmit={handleSubmit}>
               <div className={styles.inputGroup}>
                 <label htmlFor="email">E-mail:</label>
@@ -53,6 +78,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
 
@@ -65,11 +91,13 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
 
-              <button type="submit" className={styles.loginButton}>
-                Entrar
+              {/* Botão de login */}
+              <button type="submit" className={styles.loginButton} disabled={loading}>
+                {loading ? "Entrando..." : "Entrar"}
               </button>
             </form>
           </div>

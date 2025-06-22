@@ -115,7 +115,7 @@ export default function DashboardMaster() {
           <table className="master-dashboard-table">
             <thead>
               <tr>
-                <th>PRODUTOR</th>
+                <th>ADMINISTRADOR</th>
                 <th>E-MAIL</th>
                 <th>MILHAGEM TOTAL</th>
               </tr>
