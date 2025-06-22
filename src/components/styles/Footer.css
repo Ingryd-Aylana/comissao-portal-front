@@ -1,24 +1,17 @@
 html, body {
   margin: 0;
   padding: 0;
-  width: 100vw;
-  overflow-x: hidden;
+  width: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .footer-container {
-  background-color: #003D6B;
-  color: #fff;
+ 
+  color: black;
   padding: 2rem 1rem 1rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  
-  width: 100vw; /* Força ocupar a largura total da viewport */
+  width: 100%;
+  overflow: hidden;
   position: relative;
-  left: 0;
-  right: 0;
-  margin: 0;               /* Garante que não haja margem externa */
-  padding-left: 0;         /* Elimina qualquer padding esquerdo extra */
-  overflow-x: hidden;
 }
 
 .footer-content {
@@ -28,6 +21,7 @@ html, body {
   justify-content: space-between;
   gap: 2rem;
   width: 100%;
+  max-width: 100%;
   max-width: 1500px;
   margin: 0 auto;
 }
@@ -39,7 +33,7 @@ html, body {
 }
 
 .footer-section h3 {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #ddd;
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -56,7 +50,7 @@ html, body {
 }
 
 .footer-logo {
-  width: 150px;
+  width: 300px;
   margin-bottom: 1rem;
   height: auto;
 }
@@ -64,8 +58,8 @@ html, body {
 .social-icons a {
   display: inline-block;
   margin-right: 1rem;
-  background-color: #fff;
-  color: #003D6B;
+  background-color: #003D6B;
+  color: #fff;
   padding: 0.5rem;
   border-radius: 4px;
   font-size: 1.1rem;
@@ -73,7 +67,7 @@ html, body {
 }
 
 .social-icons a:hover {
-  background-color: #ccc;
+  background-color: #002D6B;
 }
 
 .icon-linkedin {
@@ -136,7 +130,7 @@ html, body {
 
 @media (max-width: 480px) {
   .footer-section p {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     line-height: 1.4;
   }
 
