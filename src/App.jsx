@@ -1,50 +1,72 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./config/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./config/firebase";
+
 import Sidebar from "./components/Sidebar";
 import Login from "./pages/Login/Login";
-import AdminRoute from "./routes/AdminRoute";
 
 // Páginas usuário comum
 import Dashboard from "./pages/produtor/Dashboard";
 import RelatoriosPage from "./pages/produtor/RelatoriosPage";
 import PerfilPage from "./pages/produtor/PerfilPage";
-
 import MilhagemDetalhes from "./pages/MilhagemDetalhes";
 
-// Páginas usuário master
+// Páginas master
 import DashboardMaster from "./pages/master/DashboardMaster";
 import RelatoriosProdutoresPage from "./pages/master/RelatoriosProdutoresPage";
 import MinhasComissoes from "./pages/MinhasComissoes";
 import UsuariosPage from "./pages/master/UsuariosPage";
 import UploadCard from "./pages/master/UploadCard";
-// import PerfilMasterPage from './pages/master/PerfilPage';
+// import PerfilMasterPage from "./pages/master/PerfilPage";
 
-const PrivateRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
+const PrivateRoute = ({ children, allowedRoles }) => {
+  const [user, setUser] = useState(null);
+  const [tipoUsuario, setTipoUsuario] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
-  React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsAuthenticated(!!user);
-      setLoading(false);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!currentUser) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      setUser(currentUser);
+
+      try {
+        const userDoc = await getDoc(doc(db, "usuarios", currentUser.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setTipoUsuario(data.tipoUsuario);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar tipo de usuário:", error);
+      } finally {
+        setLoading(false);
+      }
     });
 
     return () => unsubscribe();
   }, []);
 
-  if (loading) {
-    return <div>Carregando...</div>;
+  if (loading) return <div>Carregando...</div>;
+
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+
+  if (allowedRoles && !allowedRoles.includes(tipoUsuario)) {
+    return <Navigate to="/login" replace />;
   }
 
-  return isAuthenticated ? (
+  return (
     <>
       <Sidebar />
       <main className="container">{children}</main>
     </>
-  ) : (
-    <Navigate to="/login" replace />
   );
 };
 
@@ -53,14 +75,13 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
-
       <Route path="/login" element={<Login />} />
 
-      {/* Rotas protegidas */}
+      {/* Rotas para usuários do tipo "produtor" */}
       <Route
         path="/dashboard"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["produtor"]}>
             <Dashboard />
           </PrivateRoute>
         }
@@ -68,7 +89,7 @@ function App() {
       <Route
         path="/milhagem/:id"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["produtor"]}>
             <MilhagemDetalhes />
           </PrivateRoute>
         }
@@ -76,7 +97,7 @@ function App() {
       <Route
         path="/relatorios"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["produtor"]}>
             <RelatoriosPage />
           </PrivateRoute>
         }
@@ -84,57 +105,53 @@ function App() {
       <Route
         path="/perfil"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["produtor"]}>
             <PerfilPage />
           </PrivateRoute>
         }
       />
 
-      {/* Rotas usuário master */}
+      {/* Rotas para usuários do tipo "admin" */}
       <Route
-        path="/master/dashboard"
+        path="/master/DashboardMaster"
         element={
-          <AdminRoute>
+          <PrivateRoute allowedRoles={["admin"]}>
             <DashboardMaster />
-          </AdminRoute>
+          </PrivateRoute>
         }
       />
       <Route
         path="/master/relatoriosProdutoresPage"
         element={
-          <AdminRoute>
+          <PrivateRoute allowedRoles={["admin"]}>
             <RelatoriosProdutoresPage />
-          </AdminRoute>
+          </PrivateRoute>
         }
       />
       <Route
         path="/master/usuariosPage"
         element={
-          <AdminRoute>
+          <PrivateRoute allowedRoles={["admin"]}>
             <UsuariosPage />
-          </AdminRoute>
+          </PrivateRoute>
         }
       />
-
       <Route
         path="/master/milhagens"
         element={
-          <AdminRoute>
+          <PrivateRoute allowedRoles={["admin"]}>
             <MinhasComissoes />
-          </AdminRoute>
+          </PrivateRoute>
         }
       />
-
       <Route
         path="/master/uploadCard"
         element={
-          <AdminRoute>
+          <PrivateRoute allowedRoles={["admin"]}>
             <UploadCard />
-          </AdminRoute>
+          </PrivateRoute>
         }
       />
-
-      {/* <Route path="/master/perfil" element={<PerfilMasterPage />} /> */}
     </Routes>
   );
 }

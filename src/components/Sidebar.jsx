@@ -156,7 +156,7 @@ const Sidebar = () => {
                     location.pathname === "/master/dashboard" ? "active" : ""
                   }
                 >
-                  <Link to="/master/dashboard" onClick={handleMenuClick}>
+                  <Link to="/master/dashboardMaster" onClick={handleMenuClick}>
                     <FaChartPie className="icon" /> DASHBOARD MASTER
                   </Link>
                 </li>
