@@ -1,10 +1,12 @@
 
-
 .cover {
-  width: 794px;
-  height: 1123px;
-  margin: auto;
+  width: 100%;
+  max-width: 794px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding-bottom: 40px; /* espaço extra para prevenir quebra */
   font-family: 'Segoe UI', sans-serif;
+  margin-top: 30px;
   background-color: #ffffff;
 }
 

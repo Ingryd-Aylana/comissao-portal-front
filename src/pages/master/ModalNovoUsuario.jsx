@@ -61,16 +61,19 @@ const ModalNovoUsuario = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Função para remover pontos e traços do CPF
+  const cleanCPF = (cpf) => cpf.replace(/[^\d]/g, "");
+
+  // Validação dos campos
   const validateFields = () => {
     const { nome, cpf, email, senha, telefone, celular } = formData;
 
-    const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+    const cpfLimpo = cpf.replace(/[^\d]/g, "");
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const telefoneRegex = /^\(?\d{2}\)?\s?\d{4,5}-\d{4}$/;
 
     if (nome.length < 3) return "O nome deve ter pelo menos 3 caracteres.";
-    if (!cpfRegex.test(cpf))
-      return "CPF inválido. Formato esperado: 000.000.000-00";
+    if (cpfLimpo.length !== 11) return "CPF inválido. Deve conter 11 dígitos numéricos.";
     if (!emailRegex.test(email)) return "E-mail inválido.";
     if (!usuarioParaEditar && senha.length < 6)
       return "A senha deve ter pelo menos 6 caracteres.";
@@ -93,15 +96,20 @@ const ModalNovoUsuario = ({
     setLoading(true);
     setError("");
 
+    // Limpar CPF antes de salvar no banco
+    formData.cpf = cleanCPF(formData.cpf);
+
     try {
       if (usuarioParaEditar) {
         await updateUser(usuarioParaEditar.id, formData);
-        // Enviar objeto atualizado com id para o callback onSave
-        const usuarioAtualizado = { ...usuarioParaEditar, ...formData, id: usuarioParaEditar.id };
+        const usuarioAtualizado = {
+          ...usuarioParaEditar,
+          ...formData,
+          id: usuarioParaEditar.id,
+        };
         onSave(usuarioAtualizado);
       } else {
         const novoId = await createUser(formData);
-        // Enviar objeto novo usuário com id para o callback onSave
         const novoUsuario = { ...formData, id: novoId };
         onSave(novoUsuario);
       }
@@ -151,8 +159,8 @@ const ModalNovoUsuario = ({
               value={formData.cpf}
               onChange={handleChange}
               required
-              disabled={loading || usuarioParaEditar}
-              placeholder="000.000.000-00"
+              disabled={loading}
+              placeholder="Digite apenas números (ex: 12345678900)"
             />
           </div>
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "../../components/styles/PerfilPage.css";
-import Footer from "../../components/Footer";
 import {
   FaUser,
   FaEnvelope,
@@ -165,8 +164,9 @@ export default function PerfilPage() {
               <input
                 name="cpf"
                 value={formData.cpf}
-                readOnly
-                className="readonly"
+                onChange={handleChange}
+                className={isEditing ? "editable" : ""}
+                readOnly={!isEditing}
               />
             </div>
 

@@ -5,6 +5,7 @@
   padding: 20px;
   background-color: #f8f8f8;
   color: #333;
+  margin-top: 150px;
 }
 
 /* Cabeçalho com logo e faixa azul */
@@ -23,19 +24,25 @@
   background-color: #0F3D5D;
   position: relative;
   width: 350px;
-  height: 150px;
+  height: auto;
+  padding: 20px 20px 30px 20px; /* padding inferior maior */
   display: flex;
   align-items: center;
   justify-content: center;
   clip-path: polygon(0 0, 80% 0, 100% 100%, 0% 100%);
+  box-sizing: border-box;
 }
+
+
 
 .logo-img {
-  max-width: 80%;
   max-height: 60px;
+  width: auto;
+  height: auto;
   object-fit: contain;
-
+  display: block;
 }
+
 
 /* Faixa azul claro com recorte diagonal à esquerda */
 .header-banner {

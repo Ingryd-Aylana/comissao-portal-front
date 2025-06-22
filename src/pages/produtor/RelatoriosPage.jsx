@@ -15,6 +15,8 @@ import {
   getCurrentUserFirestoreData,
 } from "../../services/comissaoService";
 
+import useProducerData from "../../hooks/UseProducerData";
+
 export default function RelatoriosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [downloading, setDownloading] = useState({});
@@ -25,17 +27,17 @@ export default function RelatoriosPage() {
 
   const printRef = useRef();
 
+  const { recentCommissions } = useProducerData(); // dados sincronizados com o Dashboard
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Buscar dados do usuário
         const userData = await getCurrentUserFirestoreData();
         setProducerData(userData);
 
         const milhagens = await getMilhagensDoUsuarioLogado();
 
-        // Agrupar milhagens por mês
         const relatoriosPorMes = milhagens.reduce((acc, milhagem) => {
           const data = new Date(milhagem.dataCriacao);
           const mes = data.toLocaleString("pt-BR", {
@@ -56,13 +58,11 @@ export default function RelatoriosPage() {
 
           acc[mesKey].milhagem += milhagem.valorComissao || 0;
           acc[mesKey].detalhes.push(milhagem);
-          // Caso tenha campo premio em milhagem, soma aqui também
           acc[mesKey].premio += milhagem.premio || 0;
 
           return acc;
         }, {});
 
-        // Converter para array e ordenar por data mais recente
         const relatoriosArray = Object.values(relatoriosPorMes).sort((a, b) => {
           const [diaA, mesA, anoA] = a.dataGeracao.split("/");
           const [diaB, mesB, anoB] = b.dataGeracao.split("/");
@@ -74,9 +74,7 @@ export default function RelatoriosPage() {
         setRelatorios(relatoriosArray);
       } catch (err) {
         console.error("Erro ao carregar relatórios:", err);
-        setError(
-          "Erro ao carregar relatórios. Por favor, tente novamente mais tarde."
-        );
+        setError("Erro ao carregar relatórios. Por favor, tente novamente mais tarde.");
       } finally {
         setLoading(false);
       }
@@ -85,7 +83,6 @@ export default function RelatoriosPage() {
     fetchData();
   }, []);
 
-  // Dados para a capa do PDF
   const dadosCapa = {
     produtor: producerData?.nome || "Não informado",
     pagamento: producerData?.dadosPagamento || "Não informado",
@@ -96,43 +93,32 @@ export default function RelatoriosPage() {
     repasse: relatorios.reduce((sum, r) => sum + (r.milhagem || 0), 0),
   };
 
-  // Função para gerar e baixar o PDF automaticamente
-  const handleDownloadPdf = async (index) => {
-    setDownloading((prev) => ({ ...prev, [`${index}-pdf`]: true }));
-
+  const handleDownloadPdf = async () => {
     try {
       const input = printRef.current;
       if (!input) throw new Error("Referência para PDF não encontrada.");
 
       const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // Captura o conteúdo em alta resolução
       const canvas = await html2canvas(input, { scale: 2 });
       const imgData = canvas.toDataURL("image/png");
 
-      // Proporção da imagem no PDF
+      const pdfWidth = pdf.internal.pageSize.getWidth();
       const imgProps = pdf.getImageProperties(imgData);
-      const imgWidth = pdfWidth;
-      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
       let heightLeft = imgHeight;
       let position = 0;
 
-      // Adiciona a primeira página
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeight);
+      heightLeft -= pdf.internal.pageSize.getHeight();
 
-      // Adiciona páginas extras enquanto sobrar conteúdo vertical
       while (heightLeft > 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+        pdf.addImage(imgData, "PNG", 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdf.internal.pageSize.getHeight();
       }
 
-      // Formata nome do produtor para nome do arquivo
       const formattedName = (producerData?.nome || "usuario")
         .replace(/\s+/g, "")
         .normalize("NFD")
@@ -141,44 +127,30 @@ export default function RelatoriosPage() {
       pdf.save(`relatorio-milhagem-${formattedName}.pdf`);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-    } finally {
-      setDownloading((prev) => ({ ...prev, [`${index}-pdf`]: false }));
     }
   };
 
-
-  // Função para gerar e baixar Excel
-  const handleDownloadExcel = (index) => {
-    setDownloading({ [`${index}-excel`]: true });
-
+  const handleDownloadExcel = () => {
     try {
-      // Montar dados para Excel (exemplo: cabeçalho + detalhes)
-      const relatorio = relatorios[index];
-      const detalhes = relatorio.detalhes;
-
-      // Mapear dados para formato Excel
-      const dadosExcel = detalhes.map((item) => ({
-        "Data": new Date(item.dataCriacao).toLocaleDateString("pt-BR"),
-        "Comissão": item.valorComissao,
-        "Descrição": item.descricao || "",
-        // Adicione mais campos conforme necessário
+      const dadosExcel = recentCommissions.map((item) => ({
+        "Segurado": item.policyHolder || "-",
+        "Apólice": item.policyNumber || "-",
+        "Início Vigência": item.startDate || "-",
+        "Prêmio Líquido": item.netPremium || 0,
+        "Milhagem": item.commission || 0,
       }));
 
-      // Criar planilha e pasta de trabalho
       const worksheet = XLSX.utils.json_to_sheet(dadosExcel);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório");
 
-      // Gerar arquivo Excel (xlsx)
       const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
 
-      // Criar blob e salvar arquivo
       const blob = new Blob([wbout], {
         type:
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      // Formatar nome do arquivo
       const formattedName = (producerData?.nome || "usuario")
         .replace(/\s+/g, "")
         .normalize("NFD")
@@ -187,27 +159,15 @@ export default function RelatoriosPage() {
       saveAs(blob, `relatorio-milhagem-${formattedName}.xlsx`);
     } catch (err) {
       console.error("Erro ao gerar Excel:", err);
-    } finally {
-      setDownloading({ [`${index}-excel`]: false });
     }
   };
+
   const filteredRelatorios = relatorios.filter((relatorio) =>
     relatorio.mes.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading)
-    return (
-      <div className="loading-container">
-        <p>Carregando relatórios...</p>
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="error-container">
-        <p>{error}</p>
-      </div>
-    );
+  if (loading) return <div className="loading-container"><p>Carregando relatórios...</p></div>;
+  if (error) return <div className="error-container"><p>{error}</p></div>;
 
   return (
     <div className="main">
@@ -241,40 +201,23 @@ export default function RelatoriosPage() {
                 <tr key={index}>
                   <td>{relatorio.mes}</td>
                   <td>{relatorio.dataGeracao}</td>
-                  <td>
-                    {new Intl.NumberFormat("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }).format(relatorio.milhagem)}
-                  </td>
+                  <td>{new Intl.NumberFormat("pt-BR", {
+                    style: "currency", currency: "BRL"
+                  }).format(relatorio.milhagem)}</td>
                   <td>
                     <button
                       className="btn-export pdf"
-                      onClick={() => handleDownloadPdf(index)}
-                      disabled={downloading[`${index}-pdf`]}
+                      onClick={handleDownloadPdf}
                     >
-                      {downloading[`${index}-pdf`] ? (
-                        "Baixando..."
-                      ) : (
-                        <>
-                          <FaFilePdf /> PDF
-                        </>
-                      )}
+                      <FaFilePdf /> PDF
                     </button>
 
                     <button
                       className="btn-export excel"
-                      onClick={() => handleDownloadExcel(index)}
-                      disabled={downloading[`${index}-excel`]}
+                      onClick={handleDownloadExcel}
                       style={{ marginLeft: "8px" }}
                     >
-                      {downloading[`${index}-excel`] ? (
-                        "Baixando..."
-                      ) : (
-                        <>
-                          <FaFileExcel /> Excel
-                        </>
-                      )}
+                      <FaFileExcel /> Excel
                     </button>
                   </td>
                 </tr>
@@ -293,9 +236,11 @@ export default function RelatoriosPage() {
         <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
           <div ref={printRef} className="print-container">
             <CoverReport dadosCapa={dadosCapa} />
-            <DetailedReport dados={relatorios.flatMap((r) => r.detalhes || [])} />
+            <DetailedReport
+              dados={recentCommissions}
+              produtorNome={producerData?.nome || "Produtor"}
+            />
           </div>
-
         </div>
       </div>
     </div>
