@@ -7,8 +7,7 @@ import {
   updateMilhagem,
   deleteMilhagem,
 } from "../services/comissaoService";
-import { db } from "../config/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { getAllProdutores } from "../services/userService";
 
 const MinhasComissoes = () => {
   const [milhagens, setMilhagens] = useState([]);
@@ -57,13 +56,15 @@ const MinhasComissoes = () => {
 
   const loadProdutores = useCallback(async () => {
     try {
-      const snapshot = await getDocs(collection(db, "usuarios"));
-      const data = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((user) => user.tipo === "produtor" && user.nome);
-      setProdutores(data);
+      const produtores = await getAllProdutores();
+      console.table(produtores);
+      const produtoresFiltrados = produtores.filter(
+        (user) => user.tipoUsuario === "produtor" && user.nome
+      );
+      setProdutores(produtoresFiltrados);
     } catch (err) {
       console.error("Erro ao carregar produtores:", err);
+      setProdutores([]);
     }
   }, []);
 
@@ -81,7 +82,7 @@ const MinhasComissoes = () => {
         await updateMilhagem(selectedMilhagem.id, formData);
       } else {
         await createMilhagem(formData);
-        setFormData(initialForm); // limpa após criar
+        setFormData(initialForm);
       }
       setShowModal(false);
       setSelectedMilhagem(null);
@@ -126,7 +127,15 @@ const MinhasComissoes = () => {
 
       <div className="header">
         <h1 className="title">Comissões Pagas</h1>
-        <button onClick={() => setShowModal(true)} className="btn-primary">
+        <button
+          onClick={() => {
+            setSelectedMilhagem(null);
+            setFormData(initialForm);
+            setShowDetalhes(false);
+            setShowModal(true);
+          }}
+          className="btn-primary"
+        >
           Nova Comissão
         </button>
       </div>
@@ -142,7 +151,6 @@ const MinhasComissoes = () => {
               <th>Administradora</th>
               <th className="text-center">Qtd. Segurados</th>
               <th className="text-right">Prêmio Bruto</th>
-              
               <th className="text-right">Valor</th>
               <th className="text-right">Data de Pagamento</th>
               <th className="text-right">Ações</th>
@@ -194,6 +202,7 @@ const MinhasComissoes = () => {
         </table>
       </div>
 
+      {/* Modal de Criação/Edição */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -351,6 +360,7 @@ const MinhasComissoes = () => {
         </div>
       )}
 
+      {/* Modal de exclusão */}
       {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal-content">

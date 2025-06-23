@@ -11,6 +11,7 @@ import {
   where,
   Timestamp,
   orderBy,
+  writeBatch,
 } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
@@ -193,6 +194,47 @@ export const searchUsers = async (searchTerm) => {
     console.error("Erro ao buscar usuários:", error);
     throw error;
   }
+};
+
+// Função para obter os dados do usuário logado
+export const getCurrentUserFirestoreData = async () => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error("Usuário não autenticado");
+
+  const userDoc = await getDoc(doc(db, "usuarios", currentUser.uid));
+  if (!userDoc.exists()) throw new Error("Usuário não encontrado no Firestore");
+
+  return { id: userDoc.id, ...userDoc.data() };
+};
+
+// Função para atualizar o perfil do usuário
+export const updateUserProfile = async (userData) => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error("Usuário não autenticado");
+
+  await updateDoc(doc(db, "usuarios", currentUser.uid), {
+    ...userData,
+    dataAtualizacao: Timestamp.now(),
+  });
+};
+
+// Função para buscar uma milhagem por ID
+export const getMilhagemById = async (milhagemId) => {
+  const milhagemRef = doc(db, "milhagemComissoes", milhagemId);
+  const milhagemDoc = await getDoc(milhagemRef);
+
+  if (!milhagemDoc.exists()) {
+    throw new Error("Milhagem não encontrada");
+  }
+
+  const data = milhagemDoc.data();
+
+  return {
+    id: milhagemDoc.id,
+    ...data,
+    dataCriacao: data.dataCriacao?.toDate(),
+    dataAtualizacao: data.dataAtualizacao?.toDate(),
+  };
 };
 
 // Estatísticas dos usuários
