@@ -86,14 +86,7 @@ function App() {
           </PrivateRoute>
         }
       />
-      <Route
-        path="/milhagem/:id"
-        element={
-          <PrivateRoute allowedRoles={["produtor"]}>
-            <MilhagemDetalhes />
-          </PrivateRoute>
-        }
-      />
+
       <Route
         path="/relatorios"
         element={
@@ -141,6 +134,15 @@ function App() {
         element={
           <PrivateRoute allowedRoles={["admin"]}>
             <MinhasComissoes />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/milhagem/:id"
+        element={
+          <PrivateRoute allowedRoles={["admin"]}>
+            <MilhagemDetalhes />
           </PrivateRoute>
         }
       />

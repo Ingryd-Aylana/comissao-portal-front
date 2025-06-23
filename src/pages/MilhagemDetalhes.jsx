@@ -150,7 +150,7 @@ const MilhagemDetalhes = () => {
       <div className="flex justify-between items-center mb-4">
         <div>
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/master/dashboardMaster")}
             className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2"
           >
             Voltar
