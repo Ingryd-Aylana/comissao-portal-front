@@ -7,6 +7,8 @@ import {
   updateMilhagem,
   deleteMilhagem,
 } from "../services/comissaoService";
+import { db } from "../config/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 const MinhasComissoes = () => {
   const [milhagens, setMilhagens] = useState([]);
@@ -14,9 +16,13 @@ const MinhasComissoes = () => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedMilhagem, setSelectedMilhagem] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [milhagemToDelete, setMilhagemToDelete] = useState(null);
+  const [showDetalhes, setShowDetalhes] = useState(false);
+  const [produtores, setProdutores] = useState([]);
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
+  const initialForm = {
     numeroMilhagem: "",
     favorecido: "",
     administradora: "",
@@ -27,7 +33,14 @@ const MinhasComissoes = () => {
     descontoComissao: 0,
     valorComissao: 0,
     obs: "",
-  });
+    segurado: "",
+    apolice: "",
+    inicioVigencia: "",
+    dtPagamento: "",
+    valor: "",
+  };
+
+  const [formData, setFormData] = useState(initialForm);
 
   const loadMilhagens = useCallback(async () => {
     try {
@@ -37,68 +50,60 @@ const MinhasComissoes = () => {
       setMilhagens(data);
     } catch (err) {
       setError("Erro ao carregar milhagens: " + err.message);
-      console.error("Erro:", err);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  const loadProdutores = useCallback(async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "usuarios"));
+      const data = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((user) => user.tipo === "produtor" && user.nome);
+      setProdutores(data);
+    } catch (err) {
+      console.error("Erro ao carregar produtores:", err);
+    }
+  }, []);
+
   useEffect(() => {
     loadMilhagens();
-  }, [loadMilhagens]);
+    loadProdutores();
+  }, [loadMilhagens, loadProdutores]);
 
-  const handleCreate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setIsLoading(true);
       setError(null);
-      await createMilhagem(formData);
+      if (selectedMilhagem) {
+        await updateMilhagem(selectedMilhagem.id, formData);
+      } else {
+        await createMilhagem(formData);
+        setFormData(initialForm); // limpa após criar
+      }
       setShowModal(false);
-      setFormData({
-        numeroMilhagem: "",
-        favorecido: "",
-        administradora: "",
-        quantidadeSegurados: 0,
-        premioBruto: 0,
-        premioLiquido: 0,
-        percentualComissao: 0,
-        descontoComissao: 0,
-        valorComissao: 0,
-        obs: "",
-      });
+      setSelectedMilhagem(null);
+      setShowDetalhes(false);
       await loadMilhagens();
     } catch (err) {
-      setError("Erro ao criar milhagem: " + err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUpdate = async (id, newData) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      await updateMilhagem(id, newData);
-      await loadMilhagens();
-    } catch (err) {
-      setError("Erro ao atualizar milhagem: " + err.message);
+      setError("Erro ao salvar milhagem: " + err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Tem certeza que deseja excluir esta milhagem?")) {
-      try {
-        setIsLoading(true);
-        setError(null);
-        await deleteMilhagem(id);
-        await loadMilhagens();
-      } catch (err) {
-        setError("Erro ao deletar milhagem: " + err.message);
-      } finally {
-        setIsLoading(false);
-      }
+    try {
+      setIsLoading(true);
+      setError(null);
+      await deleteMilhagem(id);
+      await loadMilhagens();
+    } catch (err) {
+      setError("Erro ao deletar milhagem: " + err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -106,33 +111,22 @@ const MinhasComissoes = () => {
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(value);
+    }).format(value || 0);
 
   const formatDate = (date) => {
     if (!date) return "";
-    return new Intl.DateTimeFormat("pt-BR").format(date);
+    return new Intl.DateTimeFormat("pt-BR").format(new Date(date));
   };
-
-  if (isLoading) {
-    return <div className="loading">Carregando...</div>;
-  }
 
   return (
     <div className="container">
       <div className="logo-perfil">
-          <img
-            src="/images/logo.png"
-            alt="Logo"
-            className="logo-img perfil-logo"
-          />
-        </div>
+        <img src="/images/logo.png" alt="Logo" className="logo-img perfil-logo" />
+      </div>
+
       <div className="header">
-      
         <h1 className="title">Comissões Pagas</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn-primary"
-        >
+        <button onClick={() => setShowModal(true)} className="btn-primary">
           Nova Comissão
         </button>
       </div>
@@ -148,7 +142,10 @@ const MinhasComissoes = () => {
               <th>Administradora</th>
               <th className="text-center">Qtd. Segurados</th>
               <th className="text-right">Prêmio Bruto</th>
-              <th className="text-right">Valor Comissão</th>
+              
+              <th className="text-right">Valor</th>
+              <th className="text-right">Data de Pagamento</th>
+              <th className="text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -159,8 +156,8 @@ const MinhasComissoes = () => {
                 <td>{milhagem.administradora}</td>
                 <td className="text-center">{milhagem.quantidadeSegurados}</td>
                 <td className="text-right">{formatCurrency(milhagem.premioBruto)}</td>
-                <td className="text-right">{formatCurrency(milhagem.valorComissao)}</td>
-                <td>{formatDate(milhagem.dataCriacao)}</td>
+                <td className="text-right">{formatCurrency(milhagem.valor)}</td>
+                <td>{formatDate(milhagem.dtPagamento)}</td>
                 <td>
                   <div className="actions">
                     <button
@@ -172,14 +169,19 @@ const MinhasComissoes = () => {
                     <button
                       onClick={() => {
                         setSelectedMilhagem(milhagem);
+                        setFormData({ ...milhagem });
                         setShowModal(true);
+                        setShowDetalhes(false);
                       }}
                       className="btn-warning"
                     >
                       Editar
                     </button>
                     <button
-                      onClick={() => handleDelete(milhagem.id)}
+                      onClick={() => {
+                        setMilhagemToDelete(milhagem);
+                        setShowDeleteModal(true);
+                      }}
                       className="btn-danger"
                     >
                       Excluir
@@ -196,12 +198,12 @@ const MinhasComissoes = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>{selectedMilhagem ? "Editar Milhagem" : "Nova Milhagem"}</h2>
-            <form onSubmit={handleCreate} className="form-milhagem">
+            <form onSubmit={handleSubmit} className="form-milhagem">
               <div className="form-grid">
                 <div className="form-group">
                   <label>Número da Milhagem</label>
                   <input
-                    type="text"
+                    type="number"
                     value={formData.numeroMilhagem}
                     onChange={(e) =>
                       setFormData({ ...formData, numeroMilhagem: e.target.value })
@@ -209,7 +211,8 @@ const MinhasComissoes = () => {
                     required
                   />
                 </div>
-                <div className="form-group">
+
+                <div className="form-group" style={{ position: "relative" }}>
                   <label>Favorecido</label>
                   <input
                     type="text"
@@ -217,13 +220,34 @@ const MinhasComissoes = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, favorecido: e.target.value })
                     }
+                    autoComplete="off"
                     required
                   />
+                  {formData.favorecido.length > 0 && (
+                    <ul className="autocomplete-list">
+                      {produtores
+                        .filter((p) =>
+                          p.nome.toLowerCase().includes(formData.favorecido.toLowerCase())
+                        )
+                        .slice(0, 5)
+                        .map((p) => (
+                          <li
+                            key={p.id}
+                            onClick={() =>
+                              setFormData({ ...formData, favorecido: p.nome })
+                            }
+                          >
+                            {p.nome}
+                          </li>
+                        ))}
+                    </ul>
+                  )}
                 </div>
+
                 <div className="form-group">
                   <label>Valor</label>
                   <input
-                    type="text"
+                    type="number"
                     value={formData.valor}
                     onChange={(e) =>
                       setFormData({ ...formData, valor: e.target.value })
@@ -231,10 +255,11 @@ const MinhasComissoes = () => {
                     required
                   />
                 </div>
+
                 <div className="form-group">
                   <label>Data de Pagamento</label>
                   <input
-                    type="text"
+                    type="date"
                     value={formData.dtPagamento}
                     onChange={(e) =>
                       setFormData({ ...formData, dtPagamento: e.target.value })
@@ -242,14 +267,76 @@ const MinhasComissoes = () => {
                     required
                   />
                 </div>
-                {/* Campos adicionais conforme necessário */}
+
+                {(!selectedMilhagem || showDetalhes) && (
+                  <>
+                    <div className="form-group">
+                      <label>Segurado</label>
+                      <input
+                        type="text"
+                        value={formData.segurado || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, segurado: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Prêmio Bruto</label>
+                      <input
+                        type="number"
+                        value={formData.premioBruto || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            premioBruto: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Apólice</label>
+                      <input
+                        type="text"
+                        value={formData.apolice || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, apolice: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Início Vigência</label>
+                      <input
+                        type="date"
+                        value={formData.inicioVigencia || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            inicioVigencia: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </>
+                )}
+
+                {selectedMilhagem && (
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={() => setShowDetalhes(!showDetalhes)}
+                  >
+                    {showDetalhes ? "Ocultar Detalhes" : "Mostrar Detalhes"}
+                  </button>
+                )}
               </div>
+
               <div className="form-actions">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     setSelectedMilhagem(null);
+                    setShowDetalhes(false);
                   }}
                   className="btn-secondary"
                 >
@@ -260,6 +347,36 @@ const MinhasComissoes = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Confirmar exclusão</h3>
+            <p>
+              Tem certeza que deseja excluir a milhagem nº{" "}
+              {milhagemToDelete?.numeroMilhagem}?
+            </p>
+            <div className="form-actions">
+              <button
+                className="btn-secondary"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn-danger"
+                onClick={async () => {
+                  await handleDelete(milhagemToDelete.id);
+                  setShowDeleteModal(false);
+                  setMilhagemToDelete(null);
+                }}
+              >
+                Confirmar
+              </button>
+            </div>
           </div>
         </div>
       )}

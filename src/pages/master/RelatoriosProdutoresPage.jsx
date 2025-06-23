@@ -2,28 +2,6 @@
 import React, { useState } from "react";
 import "../../components/styles/RelatoriosProdutoresPage.css";
 
-// Dados mockados (serão substituídos por dados reais futuramente)
-const mockRelatorios = [
-  {
-    produtor: "João Silva",
-    mes: "Abril",
-    dataGeracao: "05/05/2025",
-    total: 1523.87,
-  },
-  {
-    produtor: "Maria Oliveira",
-    mes: "Março",
-    dataGeracao: "04/04/2025",
-    total: 987.45,
-  },
-  {
-    produtor: "Carlos Souza",
-    mes: "Abril",
-    dataGeracao: "06/05/2025",
-    total: 2130.00,
-  },
-];
-
 export default function RelatoriosProdutoresPage() {
   const [filtro, setFiltro] = useState("");
   const [mesSelecionado, setMesSelecionado] = useState("");
