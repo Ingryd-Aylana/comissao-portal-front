@@ -11,7 +11,7 @@ export default function Footer() {
 
         {/* Bloco da Logo e Descrição */}
         <div className="footer-section">
-        <img src="/images/logo3.png" alt="Fedcorp Logo" className="logo-img" />
+        <img src="/images/logo2.png" alt="Fedcorp Logo" className="logo-img" />
         </div>
 
         {/* Contato RJ */}

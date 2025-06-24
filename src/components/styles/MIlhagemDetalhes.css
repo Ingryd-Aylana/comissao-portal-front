@@ -1,0 +1,94 @@
+.milhagem-detalhes-container {
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .milhagem-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .milhagem-header h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #003D6B;
+  }
+
+  .btn-container {
+    display: flex;
+    gap: 1rem;
+  }
+  
+
+  .btn-geral {
+    background-color: #003D6B;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-geral {
+    background-color: #1d4ed8;
+  }
+  
+  .milhagem-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+    color: #555555;
+  }
+  
+  .milhagem-info div {
+    background-color: #f9fafb;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+  
+  .milhagem-info strong {
+    display: block;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+  }
+
+  .text-modal{
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #003D6B;
+  }
+  
+  .sem-dados {
+    text-align: center;
+    font-style: italic;
+    color: #6b7280;
+    padding: 2rem 0;
+  }
+  
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* fundo escuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }

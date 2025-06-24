@@ -6,12 +6,11 @@ html, body {
 }
 
 .footer-container {
- 
-  color: black;
+  background-color: #003D6B;
+  color: #fff;
   padding: 2rem 1rem 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   width: 100%;
-  overflow: hidden;
-  position: relative;
 }
 
 .footer-content {
@@ -33,7 +32,7 @@ html, body {
 }
 
 .footer-section h3 {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ccc;
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -50,7 +49,7 @@ html, body {
 }
 
 .footer-logo {
-  width: 300px;
+  width: 150px;
   margin-bottom: 1rem;
   height: auto;
 }
@@ -58,8 +57,8 @@ html, body {
 .social-icons a {
   display: inline-block;
   margin-right: 1rem;
-  background-color: #003D6B;
-  color: #fff;
+  background-color: #fff;
+  color: #003D6B;
   padding: 0.5rem;
   border-radius: 4px;
   font-size: 1.1rem;
@@ -67,7 +66,7 @@ html, body {
 }
 
 .social-icons a:hover {
-  background-color: #002D6B;
+  background-color: #ccc;
 }
 
 .icon-linkedin {
@@ -130,7 +129,7 @@ html, body {
 
 @media (max-width: 480px) {
   .footer-section p {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     line-height: 1.4;
   }
 
