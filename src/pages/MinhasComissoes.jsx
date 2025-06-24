@@ -24,7 +24,7 @@ const MinhasComissoes = () => {
   const initialForm = {
     numeroMilhagem: "",
     favorecido: "",
-    administradora: "",
+    segurado: "",
     quantidadeSegurados: 0,
     premioBruto: 0,
     premioLiquido: 0,
@@ -148,9 +148,8 @@ const MinhasComissoes = () => {
             <tr>
               <th>Nº Milhagem</th>
               <th>Favorecido</th>
-              <th>Administradora</th>
-              <th className="text-center">Qtd. Segurados</th>
-              <th className="text-right">Prêmio Bruto</th>
+              <th>Segurado</th>
+              <th className="text-right">Prêmio Liquído</th>
               <th className="text-right">Valor</th>
               <th className="text-right">Data de Pagamento</th>
               <th className="text-right">Ações</th>
@@ -161,8 +160,8 @@ const MinhasComissoes = () => {
               <tr key={milhagem.id}>
                 <td>{milhagem.numeroMilhagem}</td>
                 <td>{milhagem.favorecido}</td>
-                <td>{milhagem.administradora}</td>
-                <td className="text-center">{milhagem.quantidadeSegurados}</td>
+                <td>{milhagem.segurado}</td>
+                
                 <td className="text-right">{formatCurrency(milhagem.premioBruto)}</td>
                 <td className="text-right">{formatCurrency(milhagem.valor)}</td>
                 <td>{formatDate(milhagem.dtPagamento)}</td>
