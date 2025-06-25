@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import "../../components/styles/UploadCard.css";
 import { FaFileExcel, FaUpload, FaPaperPlane } from "react-icons/fa";
-import { getAllProdutores } from "../../services/userService";
+import { getAllProdutores, searchProdutoresByNomeOuEmail } from "../../services/userService";
 
 export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
   const [fileName, setFileName] = useState("");
@@ -16,17 +16,25 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
   const [produtorSelecionado, setProdutorSelecionado] = useState("");
 
   useEffect(() => {
-    async function carregarProdutores() {
+    const buscar = async () => {
       try {
-        const produtoresAtivos = await getAllProdutores();
-        setProdutores(produtoresAtivos);
+        if (inputBusca.trim().length >= 3) {
+          const resultados = await searchProdutoresByNomeOuEmail(inputBusca);
+          setProdutores(resultados);
+          setError(""); // Limpa erro após busca bem-sucedida
+        } else {
+          const todos = await getAllProdutores();
+          setProdutores(todos);
+          setError(""); // Limpa erro após busca bem-sucedida
+        }
       } catch (err) {
-        setError("Erro ao carregar produtores.");
+        console.error("Erro ao carregar produtores:", err);
       }
-    }
+    };
 
-    carregarProdutores();
-  }, []);
+    const timeout = setTimeout(buscar, 400);
+    return () => clearTimeout(timeout);
+  }, [inputBusca]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -91,6 +99,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
       console.log("Resposta do servidor:", resultado);
       setSuccess(true);
     } catch (erro) {
+      console.error("Erro ao enviar os dados:", erro);
       setError("Erro ao enviar os dados.");
     } finally {
       setIsSending(false);
@@ -116,7 +125,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
             value={inputBusca}
             onChange={(e) => {
               setInputBusca(e.target.value);
-              setProdutorSelecionado(""); // limpa se usuário começar a digitar de novo
+              setProdutorSelecionado(""); // limpa se usuário digitar de novo
             }}
             className="upload-produtor-dropdown"
           />

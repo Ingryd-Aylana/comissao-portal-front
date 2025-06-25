@@ -295,4 +295,34 @@ export const getUserStats = async () => {
   }
 };
 
+// Busca dinâmica de produtores por nome ou e-mail (autocomplete)
+export const searchProdutoresByNomeOuEmail = async (termo) => {
+  try {
+    const produtoresRef = collection(db, "usuarios");
+
+    if (!termo || termo.trim().length < 3) return [];
+
+    // Busca apenas por nome (Firebase não permite OR direto)
+    const qNome = query(
+      produtoresRef,
+      where("tipoUsuario", "==", "produtor"),
+      where("nome", ">=", termo),
+      where("nome", "<=", termo + "\uf8ff")
+    );
+
+    const querySnapshot = await getDocs(qNome);
+    const resultadosNome = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // (Opcional) Você poderia adicionar aqui uma segunda query para buscar por email
+
+    return resultadosNome;
+  } catch (error) {
+    console.error("Erro ao buscar produtores por nome:", error);
+    throw error;
+  }
+};
+
 
