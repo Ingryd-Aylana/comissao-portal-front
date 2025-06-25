@@ -164,19 +164,19 @@ const Sidebar = () => {
                   className={location.pathname === "/master/usuariosPage" ? "active" : ""}
                 >
                   <Link to="/master/usuariosPage" onClick={handleMenuClick}>
-                    PÁGINA DE USUÁRIOS
+                  <FaUser className="icon" />  PÁGINA DE USUÁRIOS
                   </Link>
                 </li>
                 <li className={location.pathname === "/master/milhagens" ? "active" : ""}>
                   <Link to="/master/milhagens" onClick={handleMenuClick}>
-                    MINHAS COMISSÕES
+                    COMISSÕES
                   </Link>
                 </li>
                 <li
                   className={location.pathname === "/master/uploadCard" ? "active" : ""}
                 >
                   <Link to="/master/uploadCard" onClick={handleMenuClick}>
-                    IMPORTAÇÃO DE PLANILHA
+                  <FaFileAlt className="icon" /> IMPORTAÇÃO DE PLANILHA
                   </Link>
                 </li>
               </>

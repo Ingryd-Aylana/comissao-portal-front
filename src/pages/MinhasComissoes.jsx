@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import "../components/styles/Comissoes.css";
 import { useNavigate } from "react-router-dom";
 import {
-  getMilhagensDoUsuarioLogado,
+  getMilhagensDeTodosUsuarios,
   createMilhagem,
   updateMilhagem,
-  deleteMilhagem,
+  deleteMilhagem
 } from "../services/comissaoService";
 import { getAllProdutores } from "../services/userService";
 
@@ -32,11 +32,10 @@ const MinhasComissoes = () => {
     descontoComissao: 0,
     valorComissao: 0,
     obs: "",
-    segurado: "",
     apolice: "",
     inicioVigencia: "",
     dtPagamento: "",
-    valor: "",
+    valor: 0,
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -45,8 +44,24 @@ const MinhasComissoes = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getMilhagensDoUsuarioLogado();
-      setMilhagens(data);
+      const data = await getMilhagensDeTodosUsuarios();
+
+      const milhagensComInfo = data.map((milhagem) => {
+        const primeiroSegurado = milhagem.segurados?.[0] || {};
+        return {
+          ...milhagem,
+          favorecido: milhagem.favorecido || milhagem.produtorNome || "Produtor desconhecido",
+          segurado: primeiroSegurado.segurado || "",
+          premioBruto: primeiroSegurado.premioBruto || 0,
+          apolice: primeiroSegurado.apolice || "",
+          inicioVigencia: primeiroSegurado.inicioVigencia || "",
+          valor: primeiroSegurado.vlRepasse || milhagem.valor || 0, // valor da comissão
+          premioLiquido: primeiroSegurado.prLiqParc || 0,
+          dtPagamento: primeiroSegurado.dtPagamento || milhagem.dtPagamento || ""
+        };
+      });
+
+      setMilhagens(milhagensComInfo);
     } catch (err) {
       setError("Erro ao carregar milhagens: " + err.message);
     } finally {
@@ -54,10 +69,10 @@ const MinhasComissoes = () => {
     }
   }, []);
 
+
   const loadProdutores = useCallback(async () => {
     try {
       const produtores = await getAllProdutores();
-      console.table(produtores);
       const produtoresFiltrados = produtores.filter(
         (user) => user.tipoUsuario === "produtor" && user.nome
       );
@@ -116,8 +131,10 @@ const MinhasComissoes = () => {
 
   const formatDate = (date) => {
     if (!date) return "";
-    return new Intl.DateTimeFormat("pt-BR").format(new Date(date));
+    const parsedDate = new Date(date);
+    return isNaN(parsedDate) ? "" : new Intl.DateTimeFormat("pt-BR").format(parsedDate);
   };
+
 
   return (
     <div className="container">
@@ -161,9 +178,11 @@ const MinhasComissoes = () => {
                 <td>{milhagem.numeroMilhagem}</td>
                 <td>{milhagem.favorecido}</td>
                 <td>{milhagem.segurado}</td>
-                
-                <td className="text-right">{formatCurrency(milhagem.premioBruto)}</td>
+
+                <td className="text-right">{formatCurrency(milhagem.premioLiquido)}</td>
                 <td className="text-right">{formatCurrency(milhagem.valor)}</td>
+
+
                 <td>{formatDate(milhagem.dtPagamento)}</td>
                 <td>
                   <div className="actions">
