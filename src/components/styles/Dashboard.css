@@ -108,6 +108,29 @@ tbody tr:hover {
   transition: transform 0.2s ease;
 }
 
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  margin-bottom: 1rem;
+}
+
+.pagination-controls button {
+  padding: 6px 12px;
+  background-color: #2f80ed;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination-controls button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+
 /* ================= RESPONSIVIDADE ================= */
 @media (max-width: 768px) {
   .dashboard-container {

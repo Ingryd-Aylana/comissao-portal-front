@@ -50,8 +50,6 @@ const UsuariosPage = () => {
     try {
       setSearching(true);
       const results = await searchUsers(searchTerm);
-      console.log("🔍 Termo buscado:", searchTerm);
-      console.log("✅ Resultados encontrados:", results);
       setUsuarios(results);
       setError(null);
     } catch (err) {
