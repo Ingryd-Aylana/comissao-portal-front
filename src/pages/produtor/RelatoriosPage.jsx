@@ -19,15 +19,14 @@ import useProducerData from "../../hooks/UseProducerData";
 
 export default function RelatoriosPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [downloading, setDownloading] = useState({});
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [producerData, setProducerData] = useState(null);
+  const [pdfRelatorioSelecionado, setPdfRelatorioSelecionado] = useState(null);
 
   const printRef = useRef();
-
-  const { recentCommissions } = useProducerData(); // dados sincronizados com o Dashboard
+  const { recentCommissions } = useProducerData();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,14 +36,20 @@ export default function RelatoriosPage() {
         setProducerData(userData);
 
         const milhagens = await getMilhagensDoUsuarioLogado();
+        console.log("Datas carregadas:", milhagens.map(m => m.dataCriacao));
 
         const relatoriosPorMes = milhagens.reduce((acc, milhagem) => {
           const data = new Date(milhagem.dataCriacao);
-          const mes = data.toLocaleString("pt-BR", {
+
+          if (data.getFullYear() === 2025 && data.getMonth() === 6) {
+            data.setMonth(5); // Corrigir Julho para Junho
+          }
+
+          const mesKey = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
+          const mes = new Date(data.getFullYear(), data.getMonth(), 1).toLocaleDateString("pt-BR", {
             month: "long",
             year: "numeric",
           });
-          const mesKey = `${data.getFullYear()}-${data.getMonth()}`;
 
           if (!acc[mesKey]) {
             acc[mesKey] = {
@@ -64,11 +69,7 @@ export default function RelatoriosPage() {
         }, {});
 
         const relatoriosArray = Object.values(relatoriosPorMes).sort((a, b) => {
-          const [diaA, mesA, anoA] = a.dataGeracao.split("/");
-          const [diaB, mesB, anoB] = b.dataGeracao.split("/");
-          return (
-            new Date(anoB, mesB - 1, diaB) - new Date(anoA, mesA - 1, diaA)
-          );
+          return new Date(b.dataGeracao.split("/").reverse().join("-")) - new Date(a.dataGeracao.split("/").reverse().join("-"));
         });
 
         setRelatorios(relatoriosArray);
@@ -83,18 +84,11 @@ export default function RelatoriosPage() {
     fetchData();
   }, []);
 
-  const dadosCapa = {
-    produtor: producerData?.nome || "Não informado",
-    pagamento: producerData?.dadosPagamento || "Não informado",
-    contato: producerData?.telefone || "Não informado",
-    email: producerData?.email || "Não informado",
-    totalApolices: relatorios.length,
-    premio: relatorios.reduce((sum, r) => sum + (r.premio || 0), 0),
-    repasse: relatorios.reduce((sum, r) => sum + (r.milhagem || 0), 0),
-  };
-
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async (relatorio) => {
     try {
+      setPdfRelatorioSelecionado(relatorio);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       const input = printRef.current;
       if (!input) throw new Error("Referência para PDF não encontrada.");
 
@@ -124,9 +118,11 @@ export default function RelatoriosPage() {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
 
-      pdf.save(`relatorio-milhagem-${formattedName}.pdf`);
+      pdf.save(`relatorio-milhagem-${formattedName}-${relatorio.mes}.pdf`);
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
+    } finally {
+      setPdfRelatorioSelecionado(null);
     }
   };
 
@@ -145,10 +141,8 @@ export default function RelatoriosPage() {
       XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório");
 
       const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-
       const blob = new Blob([wbout], {
-        type:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
       const formattedName = (producerData?.nome || "usuario")
@@ -207,11 +201,10 @@ export default function RelatoriosPage() {
                   <td>
                     <button
                       className="btn-export pdf"
-                      onClick={handleDownloadPdf}
+                      onClick={() => handleDownloadPdf(relatorio)}
                     >
                       <FaFilePdf /> PDF
                     </button>
-
                     <button
                       className="btn-export excel"
                       onClick={handleDownloadExcel}
@@ -232,16 +225,41 @@ export default function RelatoriosPage() {
           </p>
         )}
 
-        {/* Área oculta para captura do PDF */}
-        <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
-          <div ref={printRef} className="print-container">
-            <CoverReport dadosCapa={dadosCapa} />
-            <DetailedReport
-              dados={recentCommissions}
-              produtorNome={producerData?.nome || "Produtor"}
-            />
+        {/* Área oculta para geração do PDF */}
+        {pdfRelatorioSelecionado && (
+          <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+            <div ref={printRef} className="print-container">
+              <CoverReport
+                dadosCapa={{
+                  produtor: producerData?.nome || "Não informado",
+                  pagamento: producerData?.dadosPagamento || "Não informado",
+                  contato: producerData?.telefone || "Não informado",
+                  email: producerData?.email || "Não informado",
+                  totalApolices: pdfRelatorioSelecionado.detalhes.length,
+                  premio: pdfRelatorioSelecionado.premio || 0,
+                  repasse: pdfRelatorioSelecionado.milhagem || 0,
+                }}
+              />
+              <DetailedReport
+                dados={pdfRelatorioSelecionado.detalhes.flatMap((milhagem) =>
+                  (milhagem.segurados || []).map((segurado) => ({
+                    policyHolder: segurado.segurado,
+                    policyNumber: segurado.apolice,
+                    startDate:
+                      segurado.inicioVig && segurado.inicioVig.toDate
+                        ? segurado.inicioVig.toDate().toLocaleDateString("pt-BR")
+                        : segurado.inicioVig instanceof Date
+                        ? segurado.inicioVig.toLocaleDateString("pt-BR")
+                        : "-",
+                    netPremium: segurado.prLiqParc || 0,
+                    commission: segurado.vlRepasse || 0,
+                  }))
+                )}
+                produtorNome={producerData?.nome || "Produtor"}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

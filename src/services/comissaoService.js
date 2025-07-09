@@ -13,7 +13,6 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
-
 // Função para obter os dados do usuário logado do Firestore
 export const getCurrentUserFirestoreData = async () => {
   const currentUser = auth.currentUser;
@@ -40,6 +39,7 @@ export const updateUserProfile = async (userData) => {
 
 // Função para obter as milhagens do usuário logado
 export const getMilhagensDoUsuarioLogado = async () => {
+  
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
 
@@ -100,10 +100,8 @@ export const getTodasMilhagens = async () => {
   return milhagensComSegurados;
 };
 
-// Função para criar uma nova milhagem
+// Função para criar uma nova milhagem (CORRIGIDA)
 import { getAuth } from "firebase/auth";
-
-// ...
 
 export const createMilhagem = async (milhagemData) => {
   const auth = getAuth();
@@ -111,13 +109,19 @@ export const createMilhagem = async (milhagemData) => {
 
   if (!user) throw new Error("Usuário não autenticado");
 
+  const dataReferencia = milhagemData.dataCriacao
+    ? new Date(milhagemData.dataCriacao)
+    : new Date();
+
+  const dataInicioMes = new Date(dataReferencia.getFullYear(), dataReferencia.getMonth(), 1);
+
   const milhagemCompleta = {
     ...milhagemData,
     produtorUid: user.uid,
-    criadoEm: new Date().toISOString(),
+    dataCriacao: dataInicioMes, // ← agrupamento correto por mês
   };
 
-  const docRef = await addDoc(collection(db, "milhagensComissoes"), milhagemCompleta);
+  const docRef = await addDoc(collection(db, "milhagemComissoes"), milhagemCompleta);
   return docRef.id;
 };
 
@@ -207,7 +211,6 @@ export const getMilhagensDeTodosUsuarios = async () => {
       dataAtualizacao: milhagemDoc.data().dataAtualizacao?.toDate(),
     };
 
-    // Buscar nome do produtor (favorecido)
     try {
       const produtorDoc = await getDoc(doc(db, "usuarios", milhagem.produtorUid));
       if (produtorDoc.exists()) {
@@ -219,7 +222,6 @@ export const getMilhagensDeTodosUsuarios = async () => {
       milhagem.produtorNome = "Erro ao buscar produtor";
     }
 
-    // Buscar segurados da milhagem
     const seguradosRef = collection(db, "milhagemComissoes", milhagemDoc.id, "segurados");
     const seguradosSnapshot = await getDocs(seguradosRef);
 
