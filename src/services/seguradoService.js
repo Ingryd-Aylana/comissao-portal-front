@@ -10,32 +10,11 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
-// Função auxiliar para verificar permissão na milhagem
-const verificarPermissaoMilhagem = async (milhagemId) => {
-  const currentUser = auth.currentUser;
-  if (!currentUser) throw new Error("Usuário não autenticado");
-
-  const milhagemRef = doc(db, "milhagensComissoes", milhagemId);
-  const milhagemDoc = await getDoc(milhagemRef);
-
-  if (!milhagemDoc.exists()) {
-    throw new Error("Milhagem não encontrada");
-  }
-
-  if (milhagemDoc.data().produtorUid !== currentUser.uid) {
-    throw new Error("Você não tem permissão para acessar esta milhagem");
-  }
-
-  return milhagemDoc;
-};
-
 // Função para obter segurados de uma milhagem
 export const getSeguradosByMilhagem = async (milhagemId) => {
-  await verificarPermissaoMilhagem(milhagemId);
-
   const seguradosRef = collection(
     db,
-    "milhagensComissoes",
+    "milhagemComissoes",
     milhagemId,
     "segurados"
   );
@@ -55,8 +34,6 @@ export const getSeguradosByMilhagem = async (milhagemId) => {
 export const createSegurado = async (milhagemId, seguradoData) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
-
-  await verificarPermissaoMilhagem(milhagemId);
 
   // Converter datas para Timestamp
   const seguradoWithDates = {
@@ -87,8 +64,6 @@ export const createSegurado = async (milhagemId, seguradoData) => {
 
 // Função para atualizar um segurado existente
 export const updateSegurado = async (milhagemId, seguradoId, newData) => {
-  await verificarPermissaoMilhagem(milhagemId);
-
   // Converter datas para Timestamp
   const updateData = {
     ...newData,
@@ -118,8 +93,6 @@ export const updateSegurado = async (milhagemId, seguradoId, newData) => {
 
 // Função para deletar um segurado
 export const deleteSegurado = async (milhagemId, seguradoId) => {
-  await verificarPermissaoMilhagem(milhagemId);
-
   const seguradoRef = doc(
     db,
     "milhagensComissoes",
