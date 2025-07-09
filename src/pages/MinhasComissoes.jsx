@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import "../components/styles/Comissoes.css";
 import { useNavigate } from "react-router-dom";
+import { FaSearch } from "react-icons/fa";
 import {
   getMilhagensDeTodosUsuarios,
   createMilhagem,
   updateMilhagem,
-  deleteMilhagem
+  deleteMilhagem,
 } from "../services/comissaoService";
 import { getAllProdutores } from "../services/userService";
 
 const MinhasComissoes = () => {
   const [milhagens, setMilhagens] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filtro, setFiltro] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -45,7 +48,6 @@ const MinhasComissoes = () => {
       setIsLoading(true);
       setError(null);
       const data = await getMilhagensDeTodosUsuarios();
-
       const milhagensComInfo = data.map((milhagem) => {
         const primeiroSegurado = milhagem.segurados?.[0] || {};
         return {
@@ -55,12 +57,11 @@ const MinhasComissoes = () => {
           premioBruto: primeiroSegurado.premioBruto || 0,
           apolice: primeiroSegurado.apolice || "",
           inicioVigencia: primeiroSegurado.inicioVigencia || "",
-          valor: primeiroSegurado.vlRepasse || milhagem.valor || 0, // valor da comissão
+          valor: primeiroSegurado.vlRepasse || milhagem.valor || 0,
           premioLiquido: primeiroSegurado.prLiqParc || 0,
-          dtPagamento: primeiroSegurado.dtPagamento || milhagem.dtPagamento || ""
+          dtPagamento: primeiroSegurado.dtPagamento || milhagem.dtPagamento || "",
         };
       });
-
       setMilhagens(milhagensComInfo);
     } catch (err) {
       setError("Erro ao carregar milhagens: " + err.message);
@@ -68,7 +69,6 @@ const MinhasComissoes = () => {
       setIsLoading(false);
     }
   }, []);
-
 
   const loadProdutores = useCallback(async () => {
     try {
@@ -135,6 +135,21 @@ const MinhasComissoes = () => {
     return isNaN(parsedDate) ? "" : new Intl.DateTimeFormat("pt-BR").format(parsedDate);
   };
 
+  const filteredMilhagens = milhagens.filter((milhagem) => {
+    const filtroLower = filtro.toLowerCase();
+    return (
+      milhagem.numeroMilhagem?.toString().includes(filtroLower) ||
+      milhagem.favorecido?.toLowerCase().includes(filtroLower) ||
+      milhagem.segurado?.toLowerCase().includes(filtroLower)
+    );
+  });
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredMilhagens.length / itemsPerPage);
+  const paginatedMilhagens = filteredMilhagens.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="container">
@@ -159,6 +174,22 @@ const MinhasComissoes = () => {
 
       {error && <div className="alert-error">{error}</div>}
 
+      <div className="filter-wrapper">
+        <div className="filter-box">
+          <span className="filter-icon"><FaSearch /></span>
+          <input
+            type="text"
+            className="filter-input"
+            placeholder="Filtrar comissões..."
+            value={filtro}
+            onChange={(e) => {
+              setFiltro(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </div>
+
       <div className="table-wrapper">
         <table className="table-comissoes">
           <thead>
@@ -166,23 +197,20 @@ const MinhasComissoes = () => {
               <th>Nº Milhagem</th>
               <th>Favorecido</th>
               <th>Segurado</th>
-              <th className="text-right">Prêmio Liquído</th>
+              <th className="text-right">Prêmio Líquido</th>
               <th className="text-right">Valor</th>
               <th className="text-right">Data de Pagamento</th>
               <th className="text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
-            {milhagens.map((milhagem) => (
+            {paginatedMilhagens.map((milhagem) => (
               <tr key={milhagem.id}>
                 <td>{milhagem.numeroMilhagem}</td>
                 <td>{milhagem.favorecido}</td>
                 <td>{milhagem.segurado}</td>
-
                 <td className="text-right">{formatCurrency(milhagem.premioLiquido)}</td>
                 <td className="text-right">{formatCurrency(milhagem.valor)}</td>
-
-
                 <td>{formatDate(milhagem.dtPagamento)}</td>
                 <td>
                   <div className="actions">
@@ -219,6 +247,20 @@ const MinhasComissoes = () => {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              className={`page-button ${currentPage === i + 1 ? "active" : ""}`}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Modal de Criação/Edição */}
       {showModal && (
