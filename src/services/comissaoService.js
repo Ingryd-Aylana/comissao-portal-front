@@ -12,6 +12,7 @@ import {
   writeBatch,
   Timestamp,
 } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 // Função para obter os dados do usuário logado do Firestore
 export const getCurrentUserFirestoreData = async () => {
@@ -39,11 +40,10 @@ export const updateUserProfile = async (userData) => {
 
 // Função para obter as milhagens do usuário logado
 export const getMilhagensDoUsuarioLogado = async () => {
-  
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
 
-  const milhagensRef = collection(db, "milhagemComissoes");
+  const milhagensRef = collection(db, "milhagensComissoes");
   const q = query(milhagensRef, where("produtorUid", "==", currentUser.uid));
   const querySnapshot = await getDocs(q);
 
@@ -71,7 +71,7 @@ export const getMilhagensDoUsuarioLogado = async () => {
   return milhagensComSegurados;
 };
 
-// ✅ NOVA FUNÇÃO: buscar todas as comissões do banco (admin)
+//buscar todas as comissões do banco (admin)
 export const getTodasMilhagens = async () => {
   const milhagensRef = collection(db, "milhagemComissoes");
   const querySnapshot = await getDocs(milhagensRef);
@@ -100,9 +100,7 @@ export const getTodasMilhagens = async () => {
   return milhagensComSegurados;
 };
 
-// Função para criar uma nova milhagem (CORRIGIDA)
-import { getAuth } from "firebase/auth";
-
+// Função para criar uma nova milhagem 
 export const createMilhagem = async (milhagemData) => {
   const auth = getAuth();
   const user = auth.currentUser;
@@ -118,7 +116,7 @@ export const createMilhagem = async (milhagemData) => {
   const milhagemCompleta = {
     ...milhagemData,
     produtorUid: user.uid,
-    dataCriacao: dataInicioMes, // ← agrupamento correto por mês
+    dataCriacao: dataInicioMes,
   };
 
   const docRef = await addDoc(collection(db, "milhagemComissoes"), milhagemCompleta);
@@ -239,4 +237,32 @@ export const getMilhagensDeTodosUsuarios = async () => {
   }
 
   return milhagensCompletas;
+};
+
+// ✅ Função para buscar milhagem específica por ID
+export const getMilhagemById = async (id) => {
+  const milhagemRef = doc(db, "milhagemComissoes", id);
+  const milhagemDoc = await getDoc(milhagemRef);
+
+  if (!milhagemDoc.exists()) {
+    throw new Error("Milhagem não encontrada");
+  }
+
+  const milhagem = {
+    id: milhagemDoc.id,
+    ...milhagemDoc.data(),
+    dataCriacao: milhagemDoc.data().dataCriacao?.toDate(),
+    dataAtualizacao: milhagemDoc.data().dataAtualizacao?.toDate(),
+  };
+
+  try {
+    const produtorDoc = await getDoc(doc(db, "usuarios", milhagem.produtorUid));
+    milhagem.produtorNome = produtorDoc.exists()
+      ? produtorDoc.data().nome || "Sem nome"
+      : "Produtor não encontrado";
+  } catch (err) {
+    milhagem.produtorNome = "Erro ao buscar produtor";
+  }
+
+  return milhagem;
 };
