@@ -15,24 +15,24 @@ async function seedNovosDados() {
   try {
     // ---------- Usuários ----------
     const novosUsuarios = [
-
       {
-        id: "",
+        // Só para subir no banco
+        id: "usuario_xxx",
         data: {
-          nome: "",
-          email: "",
-          cpf: "",
-          celular: "",
-          telefone: "",
-          endereco: "",
+          nome: "João Doe",
+          email: "joao@email.com",
+          cpf: "12345678900",
+          celular: "11999999999",
+          telefone: "1133333333",
+          endereco: "Rua Teste, 123",
           dataCriacao: Timestamp.now(),
           dataAtualizacao: Timestamp.now(),
           status: "A",
           tipoUsuario: "produtor",
           administradoraId: "BBZ",
         },
-        
       },
+    
    
       // adicione outros usuários aqui...
     ];
@@ -44,31 +44,32 @@ async function seedNovosDados() {
 
     // ---------- Milhagem + Segurados ----------
     const novasMilhagens = [
+     
       {
-        id: "milhagem_013",
+        id: "milhagem_024",
         milhagem: {
-          produtorUid: "",
+          produtorUid: "l4VYEXWSchVkFWzYgaljuvfiNgy2",
           administradoraId: "BBZ",
-          numeroMilhagem: "MILHAGEM013",
+          numeroMilhagem: "MILHAGEM024",
           percentualComissao: 2.7,
-          valorComissao: 501.64,
-          premioLiquido: 18579.33,
-          premioBruto: 19950.48,
+          valorComissao: 340.19,
+          premioLiquido: 12599.58,
+          premioBruto: 13529.44,
           descontoComissao: 0.0,
           quantidadeSegurados: 1,
-          obs: "Comissão Maio",
+          obs: "Comissão Junho",
           dataCriacao: Timestamp.now(),
           dataAtualizacao: Timestamp.now(),
           status: "A",
         },
         segurados: [
           {
-            id: "",
+            id: "l4VYEXWSchVkFWzYgaljuvfiNgy2",
             data: {
-              segurado: "",
+              segurado: "CONDOMINIO EDIFICIO VERO",
               apolice: "",
               endosso: "",
-              nossoNumero: "",
+              nossoNumero: "11820",
               ramo: "COND",
               seguradora: "ALLI",
               tipo: "N",
@@ -82,9 +83,9 @@ async function seedNovosDados() {
               baseRepasse: "liquido",
               percentParticipacao: 100,
               percentRepasse: 2.7,
-              prLiqParc: 18579.33,
-              vlBase: 18579.33,
-              vlRepasse: 501.64,
+              prLiqParc: 12599.58,
+              vlBase: 12599.58,
+              vlRepasse: 340.19,
               canceladoSegurado: false,
               obsSegurado: "",
               userImportou: "BBZ",
@@ -92,7 +93,6 @@ async function seedNovosDados() {
           },
         ],
       },
-
       // adicione outras milhagens aqui...
     ];
 

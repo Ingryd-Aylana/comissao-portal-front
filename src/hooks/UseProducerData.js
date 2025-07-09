@@ -41,7 +41,6 @@ export default function useProducerData() {
         milhagens.forEach((milhagem) => {
           totalPremioLiquido += milhagem.premioLiquido || 0;
           totalComissao += milhagem.valorComissao || 0;
-          // Adicionar quantidade de segurados da sub-coleção
           totalSegurados += milhagem.segurados?.length || 0;
         });
 
@@ -49,7 +48,7 @@ export default function useProducerData() {
         setTotalCommission(totalComissao);
         setTotalSegurados(totalSegurados);
 
-        // Pegar os 3 segurados mais recentes de todas as milhagens
+        // Agregar todos os segurados de todas as milhagens
         const allSegurados = milhagens.flatMap((milhagem) =>
           (milhagem.segurados || []).map((segurado) => ({
             ...segurado,
@@ -58,9 +57,9 @@ export default function useProducerData() {
           }))
         );
 
+        // Ordenar por data de criação e mapear para exibição
         const recentSegurados = allSegurados
           .sort((a, b) => b.dataCriacao - a.dataCriacao)
-          .slice(0, 3)
           .map((segurado) => ({
             policyHolder: segurado.segurado,
             policyNumber: segurado.apolice,

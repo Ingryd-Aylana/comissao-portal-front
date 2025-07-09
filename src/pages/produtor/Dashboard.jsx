@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import BannerCard from "../../components/BannerCard";
 import useProducerData from "../../hooks/UseProducerData";
 import { BarChart2, Users, DollarSign } from "lucide-react";
@@ -16,7 +16,16 @@ export default function Dashboard() {
     error,
   } = useProducerData();
 
-  // Função para formatar valores monetários
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Paginação: cálculo dos itens visíveis
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = recentCommissions.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(recentCommissions.length / itemsPerPage);
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -46,7 +55,6 @@ export default function Dashboard() {
 
       <main className="dashboard-container">
         <h1 className="dashboard-title">Painel do Produtor</h1>
-        {/* Nome do produtor */}
         <h3 className="dashboard-title">
           Olá, {producerInfo.nome_produtor || "Produtor"}!
         </h3>
@@ -80,28 +88,49 @@ export default function Dashboard() {
         <section className="dashboard-tables">
           <h2>Últimos Lançamentos</h2>
           {recentCommissions.length > 0 ? (
-            <table>
-              <thead>
-                <tr>
-                  <th>SEGURADO</th>
-                  <th>APÓLICE</th>
-                  <th>INÍCIO VIG</th>
-                  <th>PRÊMIO LIQ.</th>
-                  <th>MILHAGEM</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentCommissions.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.policyHolder || "-"}</td>
-                    <td>{item.policyNumber || "-"}</td>
-                    <td>{item.startDate || "-"}</td>
-                    <td>{formatCurrency(item.netPremium)}</td>
-                    <td>{formatCurrency(item.commission)}</td>
+            <>
+              <table>
+                <thead>
+                  <tr>
+                    <th>SEGURADO</th>
+                    <th>APÓLICE</th>
+                    <th>INÍCIO VIG</th>
+                    <th>PRÊMIO LIQ.</th>
+                    <th>MILHAGEM</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {currentItems.map((item, index) => (
+                    <tr key={index}>
+                      <td>{item.policyHolder || "-"}</td>
+                      <td>{item.policyNumber || "-"}</td>
+                      <td>{item.startDate || "-"}</td>
+                      <td>{formatCurrency(item.netPremium)}</td>
+                      <td>{formatCurrency(item.commission)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Controles de Paginação */}
+              <div className="pagination-controls">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </button>
+                <span>
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  Próximo
+                </button>
+              </div>
+            </>
           ) : (
             <p className="no-data-message">Nenhuma milhagem encontrada.</p>
           )}
