@@ -94,7 +94,7 @@ export default function Dashboard() {
                   <tr>
                     <th>SEGURADO</th>
                     <th>APÓLICE</th>
-                    <th>INÍCIO VIG</th>
+                    {/* <th>INÍCIO VIG</th> */}
                     <th>PRÊMIO LIQ.</th>
                     <th>MILHAGEM</th>
                   </tr>
@@ -104,7 +104,7 @@ export default function Dashboard() {
                     <tr key={index}>
                       <td>{item.policyHolder || "-"}</td>
                       <td>{item.policyNumber || "-"}</td>
-                      <td>{item.startDate || "-"}</td>
+                      {/* <td>{item.startDate || "-"}</td> */}
                       <td>{formatCurrency(item.netPremium)}</td>
                       <td>{formatCurrency(item.commission)}</td>
                     </tr>
