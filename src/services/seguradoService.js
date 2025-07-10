@@ -12,12 +12,7 @@ import {
 
 // Função para obter segurados de uma milhagem
 export const getSeguradosByMilhagem = async (milhagemId) => {
-  const seguradosRef = collection(
-    db,
-    "milhagemComissoes",
-    milhagemId,
-    "segurados"
-  );
+  const seguradosRef = collection(db, "milhagemComissoes", milhagemId, "segurados");
   const querySnapshot = await getDocs(seguradosRef);
 
   return querySnapshot.docs.map((doc) => ({
@@ -35,7 +30,6 @@ export const createSegurado = async (milhagemId, seguradoData) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
 
-  // Converter datas para Timestamp
   const seguradoWithDates = {
     ...seguradoData,
     dtProposta: seguradoData.dtProposta
@@ -51,11 +45,13 @@ export const createSegurado = async (milhagemId, seguradoData) => {
       ? Timestamp.fromDate(new Date(seguradoData.dtPrev))
       : null,
     userImportou: currentUser.uid,
-    statusSegurado: seguradoData.statusSegurado || "A", // Status ativo por padrão
+    statusSegurado: seguradoData.statusSegurado || "A",
+    dataCriacao: Timestamp.now(),
+    dataAtualizacao: Timestamp.now(),
   };
 
   const docRef = await addDoc(
-    collection(db, "milhagensComissoes", milhagemId, "segurados"),
+    collection(db, "milhagemComissoes", milhagemId, "segurados"),
     seguradoWithDates
   );
 
@@ -64,7 +60,6 @@ export const createSegurado = async (milhagemId, seguradoData) => {
 
 // Função para atualizar um segurado existente
 export const updateSegurado = async (milhagemId, seguradoId, newData) => {
-  // Converter datas para Timestamp
   const updateData = {
     ...newData,
     dtProposta: newData.dtProposta
@@ -79,26 +74,15 @@ export const updateSegurado = async (milhagemId, seguradoId, newData) => {
     dtPrev: newData.dtPrev
       ? Timestamp.fromDate(new Date(newData.dtPrev))
       : null,
+    dataAtualizacao: Timestamp.now(),
   };
 
-  const seguradoRef = doc(
-    db,
-    "milhagensComissoes",
-    milhagemId,
-    "segurados",
-    seguradoId
-  );
+  const seguradoRef = doc(db, "milhagemComissoes", milhagemId, "segurados", seguradoId);
   await updateDoc(seguradoRef, updateData);
 };
 
 // Função para deletar um segurado
 export const deleteSegurado = async (milhagemId, seguradoId) => {
-  const seguradoRef = doc(
-    db,
-    "milhagensComissoes",
-    milhagemId,
-    "segurados",
-    seguradoId
-  );
+  const seguradoRef = doc(db, "milhagemComissoes", milhagemId, "segurados", seguradoId);
   await deleteDoc(seguradoRef);
 };

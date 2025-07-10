@@ -12,7 +12,6 @@ import {
   writeBatch,
   Timestamp,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 
 // Função para obter os dados do usuário logado do Firestore
 export const getCurrentUserFirestoreData = async () => {
@@ -20,9 +19,7 @@ export const getCurrentUserFirestoreData = async () => {
   if (!currentUser) throw new Error("Usuário não autenticado");
 
   const userDoc = await getDoc(doc(db, "usuarios", currentUser.uid));
-  if (!userDoc.exists()) {
-    throw new Error("Usuário não encontrado no Firestore");
-  }
+  if (!userDoc.exists()) throw new Error("Usuário não encontrado no Firestore");
 
   return { id: userDoc.id, ...userDoc.data() };
 };
@@ -43,7 +40,7 @@ export const getMilhagensDoUsuarioLogado = async () => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
 
-  const milhagensRef = collection(db, "milhagensComissoes");
+  const milhagensRef = collection(db, "milhagemComissoes");
   const q = query(milhagensRef, where("produtorUid", "==", currentUser.uid));
   const querySnapshot = await getDocs(q);
 
@@ -71,7 +68,7 @@ export const getMilhagensDoUsuarioLogado = async () => {
   return milhagensComSegurados;
 };
 
-//buscar todas as comissões do banco (admin)
+// Buscar todas as comissões do banco (admin)
 export const getTodasMilhagens = async () => {
   const milhagensRef = collection(db, "milhagemComissoes");
   const querySnapshot = await getDocs(milhagensRef);
@@ -100,17 +97,14 @@ export const getTodasMilhagens = async () => {
   return milhagensComSegurados;
 };
 
-// Função para criar uma nova milhagem 
+// Criar nova milhagem
 export const createMilhagem = async (milhagemData) => {
-  const auth = getAuth();
   const user = auth.currentUser;
-
   if (!user) throw new Error("Usuário não autenticado");
 
   const dataReferencia = milhagemData.dataCriacao
     ? new Date(milhagemData.dataCriacao)
     : new Date();
-
   const dataInicioMes = new Date(dataReferencia.getFullYear(), dataReferencia.getMonth(), 1);
 
   const milhagemCompleta = {
@@ -123,21 +117,15 @@ export const createMilhagem = async (milhagemData) => {
   return docRef.id;
 };
 
-// Função para atualizar uma milhagem existente
+// Atualizar milhagem existente (sem verificação de permissão)
 export const updateMilhagem = async (id, newData) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
 
   const milhagemRef = doc(db, "milhagemComissoes", id);
+  console.log("PATH updateMilhagem – root:", milhagemRef.path);
   const milhagemDoc = await getDoc(milhagemRef);
-
-  if (!milhagemDoc.exists()) {
-    throw new Error("Milhagem não encontrada");
-  }
-
-  if (milhagemDoc.data().produtorUid !== currentUser.uid) {
-    throw new Error("Você não tem permissão para atualizar esta milhagem");
-  }
+  if (!milhagemDoc.exists()) throw new Error("Milhagem não encontrada");
 
   const batch = writeBatch(db);
   const now = Timestamp.now();
@@ -151,9 +139,7 @@ export const updateMilhagem = async (id, newData) => {
   if (segurados && Array.isArray(segurados)) {
     const seguradosRef = collection(milhagemRef, "segurados");
     const seguradosSnapshot = await getDocs(seguradosRef);
-    seguradosSnapshot.docs.forEach((doc) => {
-      batch.delete(doc.ref);
-    });
+    seguradosSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
 
     for (const segurado of segurados) {
       const seguradoRef = doc(collection(milhagemRef, "segurados"));
@@ -169,33 +155,26 @@ export const updateMilhagem = async (id, newData) => {
   await batch.commit();
 };
 
-// Função para deletar uma milhagem e seus segurados
+// Deletar milhagem e segurados (sem verificação de permissão)
 export const deleteMilhagem = async (id) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
 
   const milhagemRef = doc(db, "milhagemComissoes", id);
+  console.log("Tentando deletar documento em:", milhagemRef.path)
   const milhagemDoc = await getDoc(milhagemRef);
-
-  if (!milhagemDoc.exists()) {
-    throw new Error("Milhagem não encontrada");
-  }
-
-  if (milhagemDoc.data().produtorUid !== currentUser.uid) {
-    throw new Error("Você não tem permissão para deletar esta milhagem");
-  }
+  if (!milhagemDoc.exists()) throw new Error("Milhagem não encontrada");
 
   const batch = writeBatch(db);
   const seguradosRef = collection(milhagemRef, "segurados");
   const seguradosSnapshot = await getDocs(seguradosRef);
-  seguradosSnapshot.docs.forEach((doc) => {
-    batch.delete(doc.ref);
-  });
+  seguradosSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
 
   batch.delete(milhagemRef);
   await batch.commit();
 };
 
+// Buscar milhagens de todos os usuários (admin)
 export const getMilhagensDeTodosUsuarios = async () => {
   const milhagensRef = collection(db, "milhagemComissoes");
   const querySnapshot = await getDocs(milhagensRef);
@@ -211,19 +190,16 @@ export const getMilhagensDeTodosUsuarios = async () => {
 
     try {
       const produtorDoc = await getDoc(doc(db, "usuarios", milhagem.produtorUid));
-      if (produtorDoc.exists()) {
-        milhagem.produtorNome = produtorDoc.data().nome || "Sem nome";
-      } else {
-        milhagem.produtorNome = "Produtor não encontrado";
-      }
-    } catch (err) {
+      milhagem.produtorNome = produtorDoc.exists()
+        ? produtorDoc.data().nome || "Sem nome"
+        : "Produtor não encontrado";
+    } catch {
       milhagem.produtorNome = "Erro ao buscar produtor";
     }
 
     const seguradosRef = collection(db, "milhagemComissoes", milhagemDoc.id, "segurados");
     const seguradosSnapshot = await getDocs(seguradosRef);
-
-    const segurados = seguradosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const segurados = seguradosSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     milhagem.segurados = segurados;
 
     if (segurados.length > 0) {
@@ -239,7 +215,7 @@ export const getMilhagensDeTodosUsuarios = async () => {
   return milhagensCompletas;
 };
 
-// ✅ Função para buscar milhagem específica por ID
+// Buscar milhagem específica por ID
 export const getMilhagemById = async (id) => {
   const milhagemRef = doc(db, "milhagemComissoes", id);
   const milhagemDoc = await getDoc(milhagemRef);
@@ -260,7 +236,7 @@ export const getMilhagemById = async (id) => {
     milhagem.produtorNome = produtorDoc.exists()
       ? produtorDoc.data().nome || "Sem nome"
       : "Produtor não encontrado";
-  } catch (err) {
+  } catch {
     milhagem.produtorNome = "Erro ao buscar produtor";
   }
 
