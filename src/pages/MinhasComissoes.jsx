@@ -22,6 +22,7 @@ const MinhasComissoes = () => {
   const [milhagemToDelete, setMilhagemToDelete] = useState(null);
   const [showDetalhes, setShowDetalhes] = useState(false);
   const [produtores, setProdutores] = useState([]);
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
   const navigate = useNavigate();
 
   const initialForm = {
@@ -54,7 +55,7 @@ const MinhasComissoes = () => {
           ...milhagem,
           favorecido: milhagem.favorecido || milhagem.produtorNome || "Produtor desconhecido",
           segurado: primeiroSegurado.segurado || "",
-          premioBruto: primeiroSegurado.premioBruto || 0,
+          premioBruto: primeiroSegurado.VlBase || 0,
           apolice: primeiroSegurado.apolice || "",
           inicioVigencia: primeiroSegurado.inicioVigencia || "",
           valor: primeiroSegurado.vlRepasse || milhagem.valor || 0,
@@ -223,7 +224,23 @@ const MinhasComissoes = () => {
                     <button
                       onClick={() => {
                         setSelectedMilhagem(milhagem);
-                        setFormData({ ...milhagem });
+                        const primeiroSegurado = milhagem.segurados?.[0] || {};
+                        setFormData({
+                          numeroMilhagem: milhagem.numeroMilhagem || "",
+                          favorecido: milhagem.favorecido || "",
+                          segurado: primeiroSegurado.segurado || "",
+                          quantidadeSegurados: milhagem.quantidadeSegurados || 0,
+                          premioBruto: primeiroSegurado.VlBase || 0,
+                          premioLiquido: primeiroSegurado.prLiqParc || 0,
+                          percentualComissao: milhagem.percentualComissao || 0,
+                          descontoComissao: milhagem.descontoComissao || 0,
+                          valorComissao: milhagem.valorComissao || 0,
+                          obs: milhagem.obs || "",
+                          apolice: primeiroSegurado.apolice || "",
+                          inicioVigencia: primeiroSegurado.inicioVigencia || "",
+                          dtPagamento: primeiroSegurado.dtPagamento || "",
+                          valor: primeiroSegurado.vlRepasse || milhagem.valor || 0,
+                        });
                         setShowModal(true);
                         setShowDetalhes(false);
                       }}
@@ -272,7 +289,7 @@ const MinhasComissoes = () => {
                 <div className="form-group">
                   <label>Número da Milhagem</label>
                   <input
-                    type="number"
+                    type="text"
                     value={formData.numeroMilhagem}
                     onChange={(e) =>
                       setFormData({ ...formData, numeroMilhagem: e.target.value })
@@ -286,13 +303,16 @@ const MinhasComissoes = () => {
                   <input
                     type="text"
                     value={formData.favorecido}
-                    onChange={(e) =>
-                      setFormData({ ...formData, favorecido: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setFormData({ ...formData, favorecido: e.target.value });
+                      setShowAutocomplete(true);
+                    }}
+                    onFocus={() => setShowAutocomplete(true)}
+                    onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
                     autoComplete="off"
                     required
                   />
-                  {formData.favorecido.length > 0 && (
+                  {formData.favorecido.length > 0 && showAutocomplete && (
                     <ul className="autocomplete-list">
                       {produtores
                         .filter((p) =>
@@ -302,9 +322,10 @@ const MinhasComissoes = () => {
                         .map((p) => (
                           <li
                             key={p.id}
-                            onClick={() =>
-                              setFormData({ ...formData, favorecido: p.nome })
-                            }
+                            onClick={() => {
+                              setFormData({ ...formData, favorecido: p.nome });
+                              setShowAutocomplete(false);
+                            }}
                           >
                             {p.nome}
                           </li>
@@ -326,77 +347,51 @@ const MinhasComissoes = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Data de Pagamento</label>
+                  <label>Segurado</label>
                   <input
-                    type="date"
-                    value={formData.dtPagamento}
+                    type="text"
+                    value={formData.segurado || ""}
                     onChange={(e) =>
-                      setFormData({ ...formData, dtPagamento: e.target.value })
+                      setFormData({ ...formData, segurado: e.target.value })
                     }
-                    required
                   />
                 </div>
-
-                {(!selectedMilhagem || showDetalhes) && (
-                  <>
-                    <div className="form-group">
-                      <label>Segurado</label>
-                      <input
-                        type="text"
-                        value={formData.segurado || ""}
-                        onChange={(e) =>
-                          setFormData({ ...formData, segurado: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Prêmio Bruto</label>
-                      <input
-                        type="number"
-                        value={formData.premioBruto || ""}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            premioBruto: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Apólice</label>
-                      <input
-                        type="text"
-                        value={formData.apolice || ""}
-                        onChange={(e) =>
-                          setFormData({ ...formData, apolice: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Início Vigência</label>
-                      <input
-                        type="date"
-                        value={formData.inicioVigencia || ""}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            inicioVigencia: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </>
-                )}
-
-                {selectedMilhagem && (
-                  <button
-                    type="button"
-                    className="btn-outline"
-                    onClick={() => setShowDetalhes(!showDetalhes)}
-                  >
-                    {showDetalhes ? "Ocultar Detalhes" : "Mostrar Detalhes"}
-                  </button>
-                )}
+                <div className="form-group">
+                  <label>Prêmio Líquido</label>
+                  <input
+                    type="number"
+                    value={formData.premioLiquido || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        premioLiquido: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Apólice</label>
+                  <input
+                    type="text"
+                    value={formData.apolice || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, apolice: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Início Vigência</label>
+                  <input
+                    type="date"
+                    value={formData.inicioVigencia || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        inicioVigencia: e.target.value,
+                      })
+                    }
+                  />
+                </div>
               </div>
 
               <div className="form-actions">
