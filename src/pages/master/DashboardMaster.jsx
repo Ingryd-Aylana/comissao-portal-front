@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { BarChart2, Users, DollarSign } from "lucide-react";
 import "../../components/styles/DashboardMaster.css";
 import { getUserStats } from "../../services/userService";
-import { useAdminProtection } from "../../hooks/useAdminProtection";
+import { useNavigate } from "react-router-dom";
+import { auth, db } from "../../config/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function DashboardMaster() {
-  const { loading: authLoading, error: authError } = useAdminProtection();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [authError, setAuthError] = useState(null);
   const [stats, setStats] = useState({
     totalSegurados: 0,
     totalMilhagem: 0,
@@ -16,24 +18,46 @@ export default function DashboardMaster() {
   });
 
   useEffect(() => {
-    if (!authLoading && !authError) {
-      loadStats();
-    }
-  }, [authLoading, authError]);
+    const verificarAdminECarregar = async () => {
+      try {
+        const user = auth.currentUser;
 
-  const loadStats = async () => {
-    try {
-      setLoading(true);
-      const data = await getUserStats();
-      setStats(data);
-      setError(null);
-    } catch (err) {
-      console.error("Erro ao carregar estatísticas:", err);
-      setError("Erro ao carregar dados. Por favor, tente novamente.");
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (!user) {
+          setAuthError("Usuário não autenticado.");
+          navigate("/login");
+          return;
+        }
+
+        const userDocRef = doc(db, "usuarios", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (!userDocSnap.exists()) {
+          setAuthError("Dados do usuário não encontrados.");
+          navigate("/login");
+          return;
+        }
+
+        const userData = userDocSnap.data();
+
+        if (userData.tipoUsuario !== "admin") {
+          setAuthError("Acesso negado. Esta área é restrita a administradores.");
+          navigate("/dashboard");
+          return;
+        }
+
+        // Se for admin, carrega os dados
+        const data = await getUserStats();
+        setStats(data);
+      } catch (err) {
+        console.error("Erro de autenticação ou carregamento:", err);
+        setAuthError("Erro ao verificar permissões.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verificarAdminECarregar();
+  }, [navigate]);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -42,7 +66,7 @@ export default function DashboardMaster() {
     }).format(value);
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="loading-container">
         <p>Carregando dados...</p>
@@ -54,14 +78,6 @@ export default function DashboardMaster() {
     return (
       <div className="error-container">
         <p>{authError}</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="error-container">
-        <p>{error}</p>
       </div>
     );
   }
@@ -79,7 +95,6 @@ export default function DashboardMaster() {
 
       {/* Cards Resumo */}
       <div className="master-card-grid">
-        {/* Resumo de Vendas */}
         <div className="master-card">
           <BarChart2 size={24} />
           <span className="label">
@@ -87,7 +102,6 @@ export default function DashboardMaster() {
           </span>
           <span className="value">{stats.totalSegurados}</span>
         </div>
-        {/* Resumo de Comissão */}
         <div className="master-card">
           <DollarSign size={24} />
           <span className="label">
@@ -95,7 +109,6 @@ export default function DashboardMaster() {
           </span>
           <span className="value">{formatCurrency(stats.totalMilhagem)}</span>
         </div>
-        {/* Resumo de Produtores */}
         <div className="master-card">
           <Users size={24} />
           <span className="label">
@@ -121,7 +134,7 @@ export default function DashboardMaster() {
               </tr>
             </thead>
             <tbody>
-              {stats.rankingProdutores.map((produtor, index) => (
+              {stats.rankingProdutores.map((produtor) => (
                 <tr key={produtor.id}>
                   <td>{produtor.nome}</td>
                   <td>{produtor.email}</td>
