@@ -22,18 +22,13 @@ const MilhagemDetalhes = () => {
     try {
       setIsLoading(true);
       setError(null);
-
-      console.log("🔍 Buscando milhagem ID:", milhagemId);
-
       const milhagemData = await getMilhagemById(milhagemId);
-      console.log("✅ Milhagem encontrada:", milhagemData);
       setMilhagem(milhagemData);
-
       const seguradosData = await getSeguradosByMilhagem(milhagemId);
-      console.log("✅ Segurados encontrados:", seguradosData);
+      
       setSegurados(seguradosData);
     } catch (err) {
-      console.error("❌ Erro ao carregar dados:", err);
+
       setError("Erro ao carregar dados: " + err.message);
     } finally {
       setIsLoading(false);
@@ -65,18 +60,14 @@ const MilhagemDetalhes = () => {
           <h1 className="titulo">Detalhes da Milhagem</h1>
 
           {milhagem ? (
-           <div className="milhagem-info">
-           <p><strong>Favorecido:</strong> {milhagem.favorecido}</p>
-         
-           <p><strong>Segurado:</strong> {segurados[0]?.segurado || "—"}</p>
-         
-           <p><strong>Nº Milhagem:</strong> {milhagem.numeroMilhagem}</p>
-         
-           <p><strong>Valor:</strong> {formatCurrency(milhagem.valorComissao)}</p>
-         
-           <p><strong>Data de Pagamento:</strong> {formatDate(milhagem.dtPagamento)}</p>
-         </div>
-         
+            <div className="milhagem-info">
+              <p><strong>Segurado:</strong> {segurados[0]?.segurado || "—"}</p>
+              <p><strong>Nº Milhagem:</strong> {milhagem.numeroMilhagem}</p>
+              <p><strong>Valor:</strong> {formatCurrency(milhagem.valorComissao)}</p>
+
+
+            </div>
+
           ) : (
             <p>Nenhum dado encontrado para esta milhagem.</p>
           )}
