@@ -26,6 +26,7 @@ const MinhasComissoes = () => {
   const navigate = useNavigate();
 
   const initialForm = {
+    produtorUid: "",
     numeroMilhagem: "",
     favorecido: "",
     segurado: "",
@@ -89,27 +90,44 @@ const MinhasComissoes = () => {
     loadProdutores();
   }, [loadMilhagens, loadProdutores]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      setIsLoading(true);
-      setError(null);
-      if (selectedMilhagem) {
-        await updateMilhagem(selectedMilhagem.id, formData);
-      } else {
-        await createMilhagem(formData);
-        setFormData(initialForm);
-      }
-      setShowModal(false);
-      setSelectedMilhagem(null);
-      setShowDetalhes(false);
-      await loadMilhagens();
-    } catch (err) {
-      setError("Erro ao salvar milhagem: " + err.message);
-    } finally {
-      setIsLoading(false);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    setIsLoading(true);
+    setError(null);
+
+    if (selectedMilhagem) {
+      // Monta objeto do segurado para enviar na atualização
+      const seguradoObj = {
+        segurado: formData.segurado || "",
+        apolice: formData.apolice || "",
+        inicioVigencia: formData.inicioVigencia || "",
+        vlRepasse: parseFloat(formData.valor) || 0,
+        prLiqParc: parseFloat(formData.premioLiquido) || 0,
+        dtPagamento: formData.dtPagamento || new Date().toISOString(),
+      };
+
+      const milhagemAtualizada = {
+        ...formData,
+        segurados: [seguradoObj], // Adiciona array de segurados (1 item)
+      };
+
+      await updateMilhagem(selectedMilhagem.id, milhagemAtualizada);
+    } else {
+      await createMilhagem(formData); // criação permanece sem segurados por enquanto
+      setFormData(initialForm);
     }
-  };
+
+    setShowModal(false);
+    setSelectedMilhagem(null);
+    setShowDetalhes(false);
+    await loadMilhagens();
+  } catch (err) {
+    setError("Erro ao salvar milhagem: " + err.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleDelete = async (id) => {
     try {
@@ -323,7 +341,7 @@ const MinhasComissoes = () => {
                           <li
                             key={p.id}
                             onClick={() => {
-                              setFormData({ ...formData, favorecido: p.nome });
+                              setFormData({ ...formData, favorecido: p.nome, produtorUid: p.id });
                               setShowAutocomplete(false);
                             }}
                           >
