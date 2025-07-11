@@ -13,7 +13,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
-// Função para obter os dados do usuário logado do Firestore
+// Obter dados do usuário logado
 export const getCurrentUserFirestoreData = async () => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
@@ -24,7 +24,7 @@ export const getCurrentUserFirestoreData = async () => {
   return { id: userDoc.id, ...userDoc.data() };
 };
 
-// Função para atualizar os dados do usuário
+// Atualizar perfil do usuário logado
 export const updateUserProfile = async (userData) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
@@ -35,7 +35,7 @@ export const updateUserProfile = async (userData) => {
   });
 };
 
-// Função para obter as milhagens do usuário logado
+// Obter milhagens do usuário logado
 export const getMilhagensDoUsuarioLogado = async () => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
@@ -68,11 +68,10 @@ export const getMilhagensDoUsuarioLogado = async () => {
   return milhagensComSegurados;
 };
 
-// Buscar todas as comissões do banco (admin)
+// Buscar todas as milhagens (admin)
 export const getTodasMilhagens = async () => {
   const milhagensRef = collection(db, "milhagemComissoes");
   const querySnapshot = await getDocs(milhagensRef);
-
   const milhagensComSegurados = [];
 
   for (const milhagemDoc of querySnapshot.docs) {
@@ -99,8 +98,17 @@ export const getTodasMilhagens = async () => {
 
 // Criar nova milhagem
 export const createMilhagem = async (milhagemData) => {
-  const user = auth.currentUser;
-  if (!user) throw new Error("Usuário não autenticado");
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error("Usuário não autenticado");
+
+  // Se o admin preencheu o produtorUid manualmente no formulário, prioriza esse valor
+  const produtorUid = milhagemData.produtorUid || currentUser.uid;
+
+  // Confere se o produtorUid existe no banco
+  const produtorDoc = await getDoc(doc(db, "usuarios", produtorUid));
+  if (!produtorDoc.exists()) {
+    throw new Error("Usuário não encontrado no Firestore");
+  }
 
   const dataReferencia = milhagemData.dataCriacao
     ? new Date(milhagemData.dataCriacao)
@@ -109,59 +117,83 @@ export const createMilhagem = async (milhagemData) => {
 
   const milhagemCompleta = {
     ...milhagemData,
-    produtorUid: user.uid,
+    produtorUid,
     dataCriacao: dataInicioMes,
+    dataAtualizacao: Timestamp.now(),
+    status: "A",
   };
 
   const docRef = await addDoc(collection(db, "milhagemComissoes"), milhagemCompleta);
   return docRef.id;
 };
 
-// Atualizar milhagem existente (sem verificação de permissão)
+
+
+// Função para atualizar uma milhagem
 export const updateMilhagem = async (id, newData) => {
-  const currentUser = auth.currentUser;
-  if (!currentUser) throw new Error("Usuário não autenticado");
+  try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("Usuário não autenticado");
 
-  const milhagemRef = doc(db, "milhagemComissoes", id);
-  console.log("PATH updateMilhagem – root:", milhagemRef.path);
-  const milhagemDoc = await getDoc(milhagemRef);
-  if (!milhagemDoc.exists()) throw new Error("Milhagem não encontrada");
+    const milhagemRef = doc(db, "milhagemComissoes", id);
+    const milhagemDoc = await getDoc(milhagemRef);
+    if (!milhagemDoc.exists()) throw new Error("Milhagem não encontrada");
 
-  const batch = writeBatch(db);
-  const now = Timestamp.now();
-  const { segurados, ...milhagemData } = newData;
+    const userData = await getCurrentUserFirestoreData();
 
-  batch.update(milhagemRef, {
-    ...milhagemData,
-    dataAtualizacao: now,
-  });
-
-  if (segurados && Array.isArray(segurados)) {
-    const seguradosRef = collection(milhagemRef, "segurados");
-    const seguradosSnapshot = await getDocs(seguradosRef);
-    seguradosSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
-
-    for (const segurado of segurados) {
-      const seguradoRef = doc(collection(milhagemRef, "segurados"));
-      batch.set(seguradoRef, {
-        ...segurado,
-        dataCriacao: now,
-        dataAtualizacao: now,
-        status: "A",
-      });
+    // Log de permissão
+    console.log(`Usuário autenticado: ${userData.id}, tipo: ${userData.tipoUsuario}`);
+    if (userData.tipoUsuario !== "admin") {
+      throw new Error("Permissão negada: apenas administradores podem editar milhagens.");
     }
-  }
 
-  await batch.commit();
+    const batch = writeBatch(db);
+    const now = Timestamp.now();
+    const { segurados, ...milhagemData } = newData;
+
+    console.log("Atualizando dados da milhagem...");
+    batch.update(milhagemRef, {
+      ...milhagemData,
+      dataAtualizacao: now,
+    });
+
+    // Atualizar segurados: remove todos os antigos e recria os novos
+    if (Array.isArray(segurados)) {
+      console.log("Removendo segurados antigos...");
+      const seguradosRef = collection(db, "milhagemComissoes", id, "segurados");
+      const seguradosSnapshot = await getDocs(seguradosRef);
+
+      seguradosSnapshot.docs.forEach((docSnap) => {
+        batch.delete(docSnap.ref);
+      });
+
+      console.log("Adicionando novos segurados...");
+      for (const segurado of segurados) {
+        const novoSeguradoRef = doc(collection(db, "milhagemComissoes", id, "segurados"));
+        batch.set(novoSeguradoRef, {
+          ...segurado,
+          dataCriacao: now,
+          dataAtualizacao: now,
+          status: "A",
+        });
+      }
+    }
+
+    console.log("Salvando alterações no Firestore...");
+    await batch.commit();
+    console.log("✅ Milhagem atualizada com sucesso!");
+  } catch (error) {
+    console.error("❌ Erro ao atualizar milhagem:", error.message);
+    throw error; // propaga o erro para o front-end
+  }
 };
 
-// Deletar milhagem e segurados (sem verificação de permissão)
+// Deletar milhagem e segurados
 export const deleteMilhagem = async (id) => {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error("Usuário não autenticado");
 
   const milhagemRef = doc(db, "milhagemComissoes", id);
-  console.log("Tentando deletar documento em:", milhagemRef.path)
   const milhagemDoc = await getDoc(milhagemRef);
   if (!milhagemDoc.exists()) throw new Error("Milhagem não encontrada");
 
@@ -215,7 +247,7 @@ export const getMilhagensDeTodosUsuarios = async () => {
   return milhagensCompletas;
 };
 
-// Buscar milhagem específica por ID
+// Buscar milhagem por ID
 export const getMilhagemById = async (id) => {
   const milhagemRef = doc(db, "milhagemComissoes", id);
   const milhagemDoc = await getDoc(milhagemRef);
