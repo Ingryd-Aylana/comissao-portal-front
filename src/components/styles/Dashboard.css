@@ -130,6 +130,13 @@ tbody tr:hover {
   cursor: not-allowed;
 }
 
+.app-wrapper {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
 
 /* ================= RESPONSIVIDADE ================= */
 @media (max-width: 768px) {

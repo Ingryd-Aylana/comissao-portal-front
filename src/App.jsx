@@ -72,6 +72,7 @@ const PrivateRoute = ({ children, allowedRoles }) => {
 
 function App() {
   return (
+    <div className="app-wrapper">
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
@@ -154,7 +155,9 @@ function App() {
           </PrivateRoute>
         }
       />
+    
     </Routes>
+    </div>
   );
 }
 

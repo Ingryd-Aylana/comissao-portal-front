@@ -4,6 +4,7 @@ import { auth, db } from "../../config/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
+import { FaEye, FaEyeSlash } from 'react-icons/fa'
 
 
 const Login = () => {
@@ -11,6 +12,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate();
 
   // Função para lidar com o envio do formulário
@@ -83,18 +85,29 @@ const Login = () => {
                 />
               </div>
 
-              <div className={styles.inputGroup}>
-                <label htmlFor="password">Senha:</label>
-                <input
-                  type="password"
-                  id="password"
-                  placeholder="Digite sua senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                />
+              <div className={`${styles.inputGroup} ${styles.senhaGroup}`}>
+                <label htmlFor="senha">Senha:</label>
+                <div className={styles.senhaWrapper}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="senha"
+                    placeholder="Digite sua senha"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className={styles.togglePassword}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
+
+
 
               {/* Botão de login */}
               <button type="submit" className={styles.loginButton} disabled={loading}>
