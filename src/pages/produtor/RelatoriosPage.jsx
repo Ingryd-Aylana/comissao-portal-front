@@ -234,7 +234,6 @@ export default function RelatoriosPage() {
           </p>
         )}
 
-        {/* Área oculta para geração do PDF */}
         {pdfRelatorioSelecionado && (
           <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
             <div ref={printRef} className="print-container">
