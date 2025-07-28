@@ -126,19 +126,26 @@ export default function RelatoriosPage() {
     }
   };
 
-  const handleDownloadExcel = () => {
+  const handleDownloadExcel = (relatorio) => {
     try {
-      const dadosExcel = recentCommissions.map((item) => ({
-        "Segurado": item.policyHolder || "-",
-        "Apólice": item.policyNumber || "-",
-        "Início Vigência": item.startDate || "-",
-        "Prêmio Líquido": item.netPremium || 0,
-        "Milhagem": item.commission || 0,
-      }));
+      const dadosMensais = relatorio.detalhes.flatMap((milhagem) =>
+        (milhagem.segurados || []).map((segurado) => ({
+          "Segurado": segurado.segurado || "-",
+          "Apólice": segurado.apolice || "-",
+          "Início Vigência":
+            segurado.inicioVig && segurado.inicioVig.toDate
+              ? segurado.inicioVig.toDate().toLocaleDateString("pt-BR")
+              : segurado.inicioVig instanceof Date
+                ? segurado.inicioVig.toLocaleDateString("pt-BR")
+                : "-",
+          "Prêmio Líquido": segurado.prLiqParc || 0,
+          "Milhagem": segurado.vlRepasse || 0,
+        }))
+      );
 
-      const worksheet = XLSX.utils.json_to_sheet(dadosExcel);
+      const worksheet = XLSX.utils.json_to_sheet(dadosMensais);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório");
+      XLSX.utils.book_append_sheet(workbook, worksheet, relatorio.mes.split(" ")[0]);
 
       const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
       const blob = new Blob([wbout], {
@@ -150,11 +157,12 @@ export default function RelatoriosPage() {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
 
-      saveAs(blob, `relatorio-milhagem-${formattedName}.xlsx`);
+      saveAs(blob, `relatorio-milhagem-${formattedName}-${relatorio.mes}.xlsx`);
     } catch (err) {
-      console.error("Erro ao gerar Excel:", err);
+      console.error("Erro ao gerar Excel do mês:", err);
     }
   };
+
 
   const filteredRelatorios = relatorios.filter((relatorio) =>
     relatorio.mes.toLowerCase().includes(searchTerm.toLowerCase())
@@ -207,11 +215,12 @@ export default function RelatoriosPage() {
                     </button>
                     <button
                       className="btn-export excel"
-                      onClick={handleDownloadExcel}
+                      onClick={() => handleDownloadExcel(relatorio)}
                       style={{ marginLeft: "8px" }}
                     >
                       <FaFileExcel /> Excel
                     </button>
+
                   </td>
                 </tr>
               ))}
@@ -225,7 +234,6 @@ export default function RelatoriosPage() {
           </p>
         )}
 
-        {/* Área oculta para geração do PDF */}
         {pdfRelatorioSelecionado && (
           <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
             <div ref={printRef} className="print-container">
@@ -249,8 +257,8 @@ export default function RelatoriosPage() {
                       segurado.inicioVig && segurado.inicioVig.toDate
                         ? segurado.inicioVig.toDate().toLocaleDateString("pt-BR")
                         : segurado.inicioVig instanceof Date
-                        ? segurado.inicioVig.toLocaleDateString("pt-BR")
-                        : "-",
+                          ? segurado.inicioVig.toLocaleDateString("pt-BR")
+                          : "-",
                     netPremium: segurado.prLiqParc || 0,
                     commission: segurado.vlRepasse || 0,
                   }))
