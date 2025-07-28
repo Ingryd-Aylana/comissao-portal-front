@@ -1,9 +1,14 @@
+// [IMPORTS]
 import React, { useState, useEffect } from "react";
 import UserTable from "../../components/UserTable";
 import ModalNovoUsuario from "./ModalNovoUsuario";
 import "../../components/styles/UsuariosPage.css";
 import { Plus, Search } from "lucide-react";
-import { getAllUsers, searchUsers, deleteUserById } from "../../services/userService";
+import {
+  getAllUsers,
+  searchUsers,
+  deleteUserById,
+} from "../../services/userService";
 import { useAdminProtection } from "../../hooks/useAdminProtection";
 
 const UsuariosPage = () => {
@@ -18,6 +23,14 @@ const UsuariosPage = () => {
   const [mensagemSucesso, setMensagemSucesso] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [usuarioParaExcluir, setUsuarioParaExcluir] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // PAGINAÇÃO
+  const totalPages = Math.ceil(usuarios.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsuarios = usuarios.slice(indexOfFirstItem, indexOfLastItem);
 
   useEffect(() => {
     if (!authLoading && !authError) {
@@ -25,13 +38,13 @@ const UsuariosPage = () => {
     }
   }, [authLoading, authError]);
 
-  // Carrega todos os usuários
   const loadUsers = async () => {
     try {
       setLoading(true);
       const data = await getAllUsers();
       setUsuarios(data);
       setError(null);
+      setCurrentPage(1); // Resetar para página 1 ao carregar
     } catch (err) {
       console.error("Erro ao carregar usuários:", err);
       setError("Erro ao carregar usuários. Por favor, tente novamente.");
@@ -40,7 +53,6 @@ const UsuariosPage = () => {
     }
   };
 
-  // Busca usuários por nome, CPF ou e-mail
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
       loadUsers();
@@ -52,6 +64,7 @@ const UsuariosPage = () => {
       const results = await searchUsers(searchTerm);
       setUsuarios(results);
       setError(null);
+      setCurrentPage(1); // Resetar para página 1 após busca
     } catch (err) {
       console.error("Erro na busca:", err);
       setError("Erro ao buscar usuários. Por favor, tente novamente.");
@@ -60,19 +73,16 @@ const UsuariosPage = () => {
     }
   };
 
-  // Abre modal para cadastro
   const handleAddUser = () => {
     setEditData(null);
     setShowModal(true);
   };
 
-  // Abre modal para edição
   const handleEditUser = (usuario) => {
     setEditData(usuario);
     setShowModal(true);
   };
 
-  // Salva novo usuário ou edição
   const handleSaveUser = (usuarioSalvo) => {
     if (editData) {
       setUsuarios((prev) =>
@@ -87,17 +97,17 @@ const UsuariosPage = () => {
     setShowModal(false);
   };
 
-  // Prepara exclusão de usuário
   const handleDeleteUser = (usuario) => {
     setUsuarioParaExcluir(usuario);
     setIsDeleteModalOpen(true);
   };
 
-  // Confirma e executa exclusão
   const confirmarExclusao = async () => {
     try {
       await deleteUserById(usuarioParaExcluir.id);
-      setUsuarios((prev) => prev.filter((u) => u.id !== usuarioParaExcluir.id));
+      setUsuarios((prev) =>
+        prev.filter((u) => u.id !== usuarioParaExcluir.id)
+      );
       setMensagemSucesso("Usuário excluído com sucesso!");
       setTimeout(() => setMensagemSucesso(""), 3000);
     } catch (err) {
@@ -164,17 +174,45 @@ const UsuariosPage = () => {
           </button>
         </div>
 
-        {mensagemSucesso && <div className="mensagem-sucesso">{mensagemSucesso}</div>}
+        {mensagemSucesso && (
+          <div className="mensagem-sucesso">{mensagemSucesso}</div>
+        )}
         {error && <div className="error-message">{error}</div>}
 
         {usuarios.length === 0 ? (
           <div className="error-message">Nenhum usuário encontrado.</div>
         ) : (
-          <UserTable
-            usuarios={usuarios}
-            onEdit={handleEditUser}
-            onDelete={handleDeleteUser}
-          />
+          <>
+            <UserTable
+              usuarios={currentUsuarios}
+              onEdit={handleEditUser}
+              onDelete={handleDeleteUser}
+            />
+
+            <div className="pagination-controls">
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.max(prev - 1, 1))
+                }
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </button>
+
+              <span>
+                Página {currentPage} de {totalPages}
+              </span>
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Próxima
+              </button>
+            </div>
+          </>
         )}
       </div>
 
@@ -194,7 +232,10 @@ const UsuariosPage = () => {
               <strong>{usuarioParaExcluir?.nome}</strong>?
             </p>
             <div className="modal-actions">
-              <button className="btn-cancelar" onClick={() => setIsDeleteModalOpen(false)}>
+              <button
+                className="btn-cancelar"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
                 Cancelar
               </button>
               <button className="btn-danger" onClick={confirmarExclusao}>
