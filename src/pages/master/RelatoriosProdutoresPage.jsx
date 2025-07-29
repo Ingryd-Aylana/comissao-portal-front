@@ -1,4 +1,3 @@
-// src/pages/master/RelatoriosProdutoresPage.jsx
 import React, { useState } from "react";
 import "../../components/styles/RelatoriosProdutoresPage.css";
 
@@ -56,7 +55,6 @@ export default function RelatoriosProdutoresPage() {
               <td>{relatorio.mes}</td>
               <td>{relatorio.dataGeracao}</td>
               <td>R$ {relatorio.total.toFixed(2)}</td>
-              {/* Botão para exportar arquivo */}
               <td>
                 <button className="btn-export pdf">PDF</button>
                 <button className="btn-export excel">Excel</button>
