@@ -61,10 +61,8 @@ const ModalNovoUsuario = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Função para remover pontos e traços do CPF
   const cleanCPF = (cpf) => cpf.replace(/[^\d]/g, "");
 
-  // Validação dos campos
   const validateFields = () => {
     const { nome, cpf, email, senha, telefone, celular } = formData;
 
@@ -96,7 +94,6 @@ const ModalNovoUsuario = ({
     setLoading(true);
     setError("");
 
-    // Limpar CPF antes de salvar no banco
     formData.cpf = cleanCPF(formData.cpf);
 
     try {

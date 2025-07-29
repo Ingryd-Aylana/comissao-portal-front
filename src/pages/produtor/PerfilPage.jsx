@@ -15,7 +15,6 @@ import {
   updateUserProfile,
 } from "../../services/comissaoService";
 
-// Componente Modal interno
 function ModalConfirmacao({ isOpen, onClose, message, isError }) {
   if (!isOpen) return null;
 

@@ -17,6 +17,9 @@ export default function DashboardMaster() {
     rankingProdutores: [],
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   useEffect(() => {
     const verificarAdminECarregar = async () => {
       try {
@@ -45,7 +48,6 @@ export default function DashboardMaster() {
           return;
         }
 
-        // Se for admin, carrega os dados
         const data = await getUserStats();
         setStats(data);
       } catch (err) {
@@ -64,6 +66,18 @@ export default function DashboardMaster() {
       style: "currency",
       currency: "BRL",
     }).format(value);
+  };
+
+  const totalPages = Math.ceil(stats.rankingProdutores.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentItems = stats.rankingProdutores.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
   };
 
   if (loading) {
@@ -118,31 +132,46 @@ export default function DashboardMaster() {
         </div>
       </div>
 
-      {/* Tabela de Ranking */}
+      {/* Tabela de Ranking com Paginação */}
       <section className="master-dashboard-table-section">
         <div className="dashboard-table-header">
           <h2>Ranking de Produtores</h2>
         </div>
 
         {stats.rankingProdutores.length > 0 ? (
-          <table className="master-dashboard-table">
-            <thead>
-              <tr>
-                <th>PRODUTOR</th>
-                <th>E-MAIL</th>
-                <th>MILHAGEM TOTAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.rankingProdutores.map((produtor) => (
-                <tr key={produtor.id}>
-                  <td>{produtor.nome}</td>
-                  <td>{produtor.email}</td>
-                  <td>{formatCurrency(produtor.totalMilhagem)}</td>
+          <>
+            <table className="master-dashboard-table">
+              <thead>
+                <tr>
+                  <th>PRODUTOR</th>
+                  <th>E-MAIL</th>
+                  <th>MILHAGEM TOTAL</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {currentItems.map((produtor) => (
+                  <tr key={produtor.id}>
+                    <td>{produtor.nome}</td>
+                    <td>{produtor.email}</td>
+                    <td>{formatCurrency(produtor.totalMilhagem)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Paginação */}
+            <div className="pagination-controls">
+              <button onClick={handlePrevPage} disabled={currentPage === 1}>
+                Anterior
+              </button>
+              <span>
+                Página {currentPage} de {totalPages}
+              </span>
+              <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+                Próximo
+              </button>
+            </div>
+          </>
         ) : (
           <p className="no-data-message">Nenhum produtor encontrado.</p>
         )}

@@ -239,61 +239,46 @@ export const getMilhagemById = async (milhagemId) => {
 
 // Estatísticas dos usuários
 export const getUserStats = async () => {
-  try {
-    await checkAdminPermission();
+  const usuariosSnapshot = await getDocs(collection(db, "usuarios"));
+  const usuarios = usuariosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    const usersRef = collection(db, "usuarios");
-    const milhagensRef = collection(db, "milhagensComissoes");
+  const milhagensSnapshot = await getDocs(collection(db, "milhagemComissoes"));
+  const milhagens = milhagensSnapshot.docs.map(doc => doc.data());
 
-    const usersSnapshot = await getDocs(usersRef);
-    const users = usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  const produtorMilhagemMap = {};
 
-    const milhagensSnapshot = await getDocs(milhagensRef);
-    const milhagens = milhagensSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  milhagens.forEach((milhagem) => {
+    const produtorId = milhagem.produtorUid;
+    const premioLiquido = milhagem.premioLiquido || 0;
+    const percentualComissao = milhagem.percentualComissao || 0;
 
-    // Total de produtores ativos (status === ativo)
-    const produtoresAtivos = users.filter(
-      (user) => user.tipoUsuario === "produtor" && user.status === "ativo"
-    ).length;
+    const valorComissao = (percentualComissao / 100) * premioLiquido;
 
-    // Total de produtores cadastrados (para o card "TOTAL DE PRODUTORES")
-    const totalSegurados = users.filter((user) => user.tipoUsuario === "produtor").length;
+    if (!produtorMilhagemMap[produtorId]) {
+      produtorMilhagemMap[produtorId] = 0;
+    }
 
-    // Total de milhagem (soma das comissões)
-    const totalMilhagem = milhagens.reduce(
-      (total, m) => total + (m.valorComissao || 0),
-      0
-    );
+    produtorMilhagemMap[produtorId] += valorComissao;
+  });
 
-    // Ranking de produtores baseado em comissões
-    const produtoresComMilhagem = users
-      .filter((u) => u.tipoUsuario === "produtor")
-      .map((produtor) => {
-        const milhagemProdutor = milhagens
-          .filter((m) => m.produtorUid === produtor.uid)
-          .reduce((total, m) => total + (m.valorComissao || 0), 0);
+  const rankingProdutores = usuarios
+    .map(user => ({
+      id: user.id,
+      nome: user.nome,
+      email: user.email,
+      totalMilhagem: produtorMilhagemMap[user.id] || 0,
+    }))
+    .filter(user => user.totalMilhagem > 0) // opcional: remove zeros
+    .sort((a, b) => b.totalMilhagem - a.totalMilhagem);
 
-        return {
-          id: produtor.id,
-          nome: produtor.nome,
-          email: produtor.email,
-          totalMilhagem: milhagemProdutor,
-        };
-      })
-      .sort((a, b) => b.totalMilhagem - a.totalMilhagem)
-      .slice(0, 5); // Top 5
-
-    return {
-      produtoresAtivos,
-      totalSegurados, // usado no front como "Total de Produtores"
-      totalMilhagem,
-      rankingProdutores: produtoresComMilhagem,
-    };
-  } catch (error) {
-    console.error("Erro ao obter estatísticas:", error);
-    throw error;
-  }
+  return {
+    totalSegurados: usuarios.length,
+    produtoresAtivos: usuarios.filter(u => u.status === "ativo").length,
+    totalMilhagem: Object.values(produtorMilhagemMap).reduce((a, b) => a + b, 0),
+    rankingProdutores,
+  };
 };
+
 
 // Busca dinâmica de produtores por nome ou e-mail (autocomplete)
 export const searchProdutoresByNomeOuEmail = async (termo) => {

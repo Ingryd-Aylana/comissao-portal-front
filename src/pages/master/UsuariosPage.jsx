@@ -1,4 +1,3 @@
-// [IMPORTS]
 import React, { useState, useEffect } from "react";
 import UserTable from "../../components/UserTable";
 import ModalNovoUsuario from "./ModalNovoUsuario";

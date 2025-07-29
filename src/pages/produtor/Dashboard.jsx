@@ -18,8 +18,6 @@ export default function Dashboard() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-
-  // Paginação: cálculo dos itens visíveis
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = recentCommissions.slice(indexOfFirstItem, indexOfLastItem);
@@ -94,7 +92,6 @@ export default function Dashboard() {
                   <tr>
                     <th>SEGURADO</th>
                     <th>APÓLICE</th>
-                    {/* <th>INÍCIO VIG</th> */}
                     <th>PRÊMIO LIQ.</th>
                     <th>MILHAGEM</th>
                   </tr>
@@ -104,7 +101,6 @@ export default function Dashboard() {
                     <tr key={index}>
                       <td>{item.policyHolder || "-"}</td>
                       <td>{item.policyNumber || "-"}</td>
-                      {/* <td>{item.startDate || "-"}</td> */}
                       <td>{formatCurrency(item.netPremium)}</td>
                       <td>{formatCurrency(item.commission)}</td>
                     </tr>

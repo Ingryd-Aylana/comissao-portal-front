@@ -21,11 +21,11 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
         if (inputBusca.trim().length >= 3) {
           const resultados = await searchProdutoresByNomeOuEmail(inputBusca);
           setProdutores(resultados);
-          setError(""); // Limpa erro após busca bem-sucedida
+          setError(""); 
         } else {
           const todos = await getAllProdutores();
           setProdutores(todos);
-          setError(""); // Limpa erro após busca bem-sucedida
+          setError(""); 
         }
       } catch (err) {
         console.error("Erro ao carregar produtores:", err);
@@ -115,7 +115,6 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
           Importar Arquivo Excel
         </h2>
 
-        {/* Busca de Produtor com Autocomplete */}
         <div className="upload-select-produtor">
           <label htmlFor="busca-produtor">Selecione o produtor:</label>
           <input
@@ -125,7 +124,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
             value={inputBusca}
             onChange={(e) => {
               setInputBusca(e.target.value);
-              setProdutorSelecionado(""); // limpa se usuário digitar de novo
+              setProdutorSelecionado(""); 
             }}
             className="upload-produtor-dropdown"
           />
@@ -144,7 +143,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
           )}
         </div>
 
-        {/* Upload */}
+        
         <label htmlFor="file-upload" className="upload-label">
           <FaUpload className="icon-sm" />
           Escolher arquivo
@@ -164,7 +163,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
         )}
 
         {error && <p className="error-alert">⚠️ {error}</p>}
-        {success && <p className="success-alert">✅ Planilha enviada!</p>}
+        {success && <p className="success-alert">Planilha enviada!</p>}
 
         <button
           className="btn-enviar"
