@@ -17,14 +17,14 @@ async function seedNovosDados() {
     const novosUsuarios = [
       {
         // Só para subir no banco
-        id: "usuario_xxx",
+        id: "0qhdh5HjxNUCky8A6kpTjefKgEn1",
         data: {
-          nome: "João Doe",
-          email: "joao@email.com",
-          cpf: "12345678900",
-          celular: "11999999999",
-          telefone: "1133333333",
-          endereco: "Rua Teste, 123",
+          nome: "ERIC SOUZA BEDA ",
+          email: "eric.sza71@gmail.com",
+          cpf: "360.709.898-05",
+          celular: "(11) 96408-6939",
+          telefone: "(11) 96408-6939",
+          endereco: "",
           dataCriacao: Timestamp.now(),
           dataAtualizacao: Timestamp.now(),
           status: "A",
@@ -33,6 +33,23 @@ async function seedNovosDados() {
         },
       },
     
+      {
+        // Só para subir no banco
+        id: "cW1699q1L9eeSGvsVSoiH4bQnsH3",
+        data: {
+          nome: "KATIA DA SILVA REIS ",
+          email: "correa.katia85@gmail.com",
+          cpf: "327.189.148-66",
+          celular: "(11) 95335-9178",
+          telefone: "(11) 95335-9178",
+          endereco: "",
+          dataCriacao: Timestamp.now(),
+          dataAtualizacao: Timestamp.now(),
+          status: "A",
+          tipoUsuario: "produtor",
+          administradoraId: "BBZ",
+        },
+      },
    
       // adicione outros usuários aqui...
     ];
@@ -44,32 +61,32 @@ async function seedNovosDados() {
 
     // ---------- Milhagem + Segurados ----------
     const novasMilhagens = [
-     
+    
       {
-        id: "milhagem_024",
+        id: "milhagem_044",
         milhagem: {
-          produtorUid: "l4VYEXWSchVkFWzYgaljuvfiNgy2",
+          produtorUid: "1nSotK3e0MaVFk8ls2Rh5RbLWpH3",
           administradoraId: "BBZ",
-          numeroMilhagem: "MILHAGEM024",
+          numeroMilhagem: "MILHAGEM044",
           percentualComissao: 2.7,
-          valorComissao: 340.19,
-          premioLiquido: 12599.58,
-          premioBruto: 13529.44,
+          valorComissao: 345.36,
+          premioLiquido: 12790.96,
+          premioBruto: 12790.96,
           descontoComissao: 0.0,
           quantidadeSegurados: 1,
-          obs: "Comissão Junho",
+          obs: "Comissão Julho",
           dataCriacao: Timestamp.now(),
           dataAtualizacao: Timestamp.now(),
           status: "A",
         },
         segurados: [
           {
-            id: "l4VYEXWSchVkFWzYgaljuvfiNgy2",
+            id: "1nSotK3e0MaVFk8ls2Rh5RbLWpH3",
             data: {
-              segurado: "CONDOMINIO EDIFICIO VERO",
-              apolice: "",
+              segurado: "CONDOMINIO LINDENBERG GROENLANDIA 77",
+              apolice: "202521160051339",
               endosso: "",
-              nossoNumero: "11820",
+              nossoNumero: "12439",
               ramo: "COND",
               seguradora: "ALLI",
               tipo: "N",
@@ -83,9 +100,9 @@ async function seedNovosDados() {
               baseRepasse: "liquido",
               percentParticipacao: 100,
               percentRepasse: 2.7,
-              prLiqParc: 12599.58,
-              vlBase: 12599.58,
-              vlRepasse: 340.19,
+              prLiqParc:  12790.96,
+              vlBase:  12790.96,
+              vlRepasse: 345.36,
               canceladoSegurado: false,
               obsSegurado: "",
               userImportou: "BBZ",
