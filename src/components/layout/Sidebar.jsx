@@ -1,16 +1,18 @@
 import { NavLink } from "react-router-dom";
+import { LogOut } from "lucide-react";
 import { MENU_CONFIG } from "../../constants/menuConfig";
 import { useAuth } from "../../contexts/AuthContext";
 import { ROLES } from "../../constants/roles";
+import "../styles/Sidebar.css";
 
-export default function Sidebar() {
+export default function Sidebar({ onLogout }) {
   const { role, user, userData, isAdmin, isProducer } = useAuth();
 
   const normalizedRole = isAdmin
     ? ROLES.ADMIN
     : isProducer
-      ? ROLES.PRODUTOR
-      : role;
+    ? ROLES.PRODUTOR
+    : role;
 
   const menuItems = MENU_CONFIG[normalizedRole] || [];
 
@@ -21,10 +23,10 @@ export default function Sidebar() {
     "Usuário";
 
   const userEmail = userData?.email || user?.email || "";
+  const userRoleLabel = normalizedRole || "Usuário";
 
   return (
     <aside className="app-shell__sidebar">
-
       <div className="app-shell__logo">
         <img
           src="/images/logo2.png"
@@ -49,10 +51,29 @@ export default function Sidebar() {
                 : "app-shell__nav-link"
             }
           >
-            {item.label}
+            {item.icon && (
+              <span className="app-shell__nav-icon">{item.icon}</span>
+            )}
+
+            <span className="app-shell__nav-label">{item.label}</span>
+
+            {item.badge && (
+              <span className="app-shell__nav-badge">{item.badge}</span>
+            )}
           </NavLink>
         ))}
       </nav>
+
+      <div className="app-shell__footer">
+        <button
+          type="button"
+          className="app-shell__logout-btn"
+          onClick={onLogout}
+        >
+          <LogOut size={18} />
+          <span>Sair</span>
+        </button>
+      </div>
     </aside>
   );
 }

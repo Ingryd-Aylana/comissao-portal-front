@@ -11,8 +11,6 @@ import {
   ChevronRight,
   Inbox
 } from "lucide-react";
-import BannerCard from "../../components/BannerCard";
-import Footer from "../../components/Footer";
 import useProducerData from "../../hooks/UseProducerData";
 import "../../components/styles/Dashboard.css";
 
