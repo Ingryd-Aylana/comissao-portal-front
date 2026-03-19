@@ -1,82 +1,332 @@
 .milhagem-detalhes-container {
-    padding: 2rem;
-    background-color: #ffffff;
-    border-radius: 1rem;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
-    max-width: 1000px;
-    margin: 0 auto;
-  }
-  
-  .milhagem-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  
-  .milhagem-header h2 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: #003D6B;
-  }
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
 
-  .btn-container {
-    display: flex;
-    gap: 1rem;
-  }
-  
+.milhagem-status {
+  text-align: center;
+  padding: 2rem;
+  color: #334155;
+  font-size: 1rem;
+}
 
-  .btn-geral {
-    background-color: #003D6B;
-    color: white;
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn-geral {
-    background-color: #1d4ed8;
-  }
-  
-  .milhagem-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-    font-size: 0.95rem;
-    color: #555555;
-  }
-  
-  .milhagem-info div {
-    background-color: #f9fafb;
+.milhagem-status-error {
+  color: #b91c1c;
+}
+
+.milhagem-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.milhagem-toolbar-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-action svg {
+  font-size: 0.95rem;
+}
+
+.btn-outline {
+  background-color: #f8fafc;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+
+.btn-outline:hover {
+  background-color: #eef2f7;
+}
+
+.btn-edit {
+  background-color: #facc15;
+  color: #1f2937;
+}
+
+.btn-edit:hover {
+  background-color: #eab308;
+}
+
+.btn-delete {
+  background-color: #ef4444;
+  color: #fff;
+}
+
+.btn-delete:hover {
+  background-color: #dc2626;
+}
+
+.milhagem-detalhes-header {
+  margin-bottom: 1.75rem;
+}
+
+.milhagem-title-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.milhagem-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.milhagem-title-group h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #003d6b;
+}
+
+.milhagem-subtitle {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+}
+
+.milhagem-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-card {
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.9rem;
+  padding: 1rem;
+}
+
+.info-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.info-card strong {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.milhagem-obs-card {
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.9rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.milhagem-obs-card p {
+  margin: 0;
+  color: #334155;
+}
+
+.milhagem-segurados-section {
+  margin-top: 1rem;
+}
+
+.section-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.section-top h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #003d6b;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 0.8rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 40rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+}
+
+.modal-lg {
+  max-width: 54rem;
+}
+
+.modal-content h2,
+.modal-content h3 {
+  margin-top: 0;
+  color: #003d6b;
+}
+
+.form-milhagem {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.form-group-full {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0.45rem;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid #cbd5e1;
+  padding: 0.6rem 1rem;
+  border-radius: 0.45rem;
+  cursor: pointer;
+  color: #475569;
+}
+
+.btn-secondary:hover {
+  background-color: #f8fafc;
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.autocomplete-wrapper {
+  position: relative;
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  max-height: 180px;
+  overflow-y: auto;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+}
+
+.autocomplete-list li {
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+}
+
+.autocomplete-list li:hover {
+  background-color: #f8fafc;
+}
+
+@media (max-width: 768px) {
+  .milhagem-detalhes-container {
     padding: 1rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  }
-  
-  .milhagem-info strong {
-    display: block;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 0.25rem;
   }
 
-  .text-modal{
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: #003D6B;
+  .milhagem-title-group {
+    align-items: flex-start;
   }
-  
-  .sem-dados {
-    text-align: center;
-    font-style: italic;
-    color: #6b7280;
-    padding: 2rem 0;
-  }
-  
 
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-action span {
+    display: none;
+  }
+}

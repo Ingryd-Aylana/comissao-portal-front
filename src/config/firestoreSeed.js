@@ -1,10 +1,10 @@
+// firestoreSeed.js
 import { db } from "./firebase.js";
 import {
-  collection,
-  doc,
-  setDoc,
   Timestamp,
   writeBatch,
+  collection,
+  doc,
 } from "firebase/firestore";
 
 async function seedNovosDados() {
@@ -16,14 +16,13 @@ async function seedNovosDados() {
     // ---------- Usuários ----------
     const novosUsuarios = [
       {
-        // Só para subir no banco
-        id: "0qhdh5HjxNUCky8A6kpTjefKgEn1",
+        id: "umRTXDDDhJe5Bdrui4Cd68eRzmJ3",
         data: {
-          nome: "ERIC SOUZA BEDA ",
-          email: "eric.sza71@gmail.com",
-          cpf: "360.709.898-05",
-          celular: "(11) 96408-6939",
-          telefone: "(11) 96408-6939",
+          nome: "Jeferson Janes da Silva Bezerra",
+          email: "jefersonjsb31@gmail.com",
+          cpf: "427.317.768-46",
+          celular: "(13) 99796-1307",
+          telefone: "(13) 99796-1307",
           endereco: "",
           dataCriacao: Timestamp.now(),
           dataAtualizacao: Timestamp.now(),
@@ -32,77 +31,74 @@ async function seedNovosDados() {
           administradoraId: "BBZ",
         },
       },
-    
-      {
-        // Só para subir no banco
-        id: "cW1699q1L9eeSGvsVSoiH4bQnsH3",
-        data: {
-          nome: "KATIA DA SILVA REIS ",
-          email: "correa.katia85@gmail.com",
-          cpf: "327.189.148-66",
-          celular: "(11) 95335-9178",
-          telefone: "(11) 95335-9178",
-          endereco: "",
-          dataCriacao: Timestamp.now(),
-          dataAtualizacao: Timestamp.now(),
-          status: "A",
-          tipoUsuario: "produtor",
-          administradoraId: "BBZ",
-        },
-      },
-   
-      // adicione outros usuários aqui...
+
+      // ...adicione outros usuários aqui...
     ];
 
     for (const { id, data } of novosUsuarios) {
-      const userRef = doc(collection(db, "usuarios"), id);
+      const usuariosCollection = collection(db, "usuarios");
+
+      // Se tiver ID, usa. Se vier vazio (""), gera ID automático.
+      const userRef =
+        id && id.trim() !== ""
+          ? doc(usuariosCollection, id)
+          : doc(usuariosCollection);
+
       batch.set(userRef, data);
     }
 
     // ---------- Milhagem + Segurados ----------
     const novasMilhagens = [
-    
-      {
-        id: "milhagem_044",
+
+        {
+        id: "milhagem_082",
         milhagem: {
-          produtorUid: "1nSotK3e0MaVFk8ls2Rh5RbLWpH3",
+          produtorUid: "LrLLRzK67Nd0cPmGnBZmOQ49A4z1",
           administradoraId: "BBZ",
-          numeroMilhagem: "MILHAGEM044",
+          numeroMilhagem: "MILHAGEM082",
           percentualComissao: 2.7,
-          valorComissao: 345.36,
-          premioLiquido: 12790.96,
-          premioBruto: 12790.96,
+          valorComissao: 85.98,
+          premioLiquido: 3419.65,
+          premioBruto: 3184.62,
           descontoComissao: 0.0,
           quantidadeSegurados: 1,
-          obs: "Comissão Julho",
+          obs: "Comissão Fevereiro",
           dataCriacao: Timestamp.now(),
           dataAtualizacao: Timestamp.now(),
           status: "A",
         },
         segurados: [
           {
-            id: "1nSotK3e0MaVFk8ls2Rh5RbLWpH3",
+            id: "LrLLRzK67Nd0cPmGnBZmOQ49A4z1",
             data: {
-              segurado: "CONDOMINIO LINDENBERG GROENLANDIA 77",
-              apolice: "202521160051339",
+              segurado: "CONDOMINIO EDIFICIO RIO DOURADO",
+              apolice: "202521160096906",
               endosso: "",
-              nossoNumero: "12439",
+              nossoNumero: "17292",
               ramo: "COND",
-              seguradora: "ALLI",
+              seguradora: "ALLIANZ",
               tipo: "N",
               statusSegurado: "A",
               statusDoc: "Ativo",
-              dtProposta: Timestamp.fromDate(new Date("2025-05-28T21:00:00")),
-              dtPrev: Timestamp.fromDate(new Date("2025-05-28T21:00:00")),
-              inicioVig: Timestamp.fromDate(new Date("2025-05-28T21:00:00")),
-              fimVig: Timestamp.fromDate(new Date("2026-05-28T21:00:00")),
+              dtProposta: Timestamp.fromDate(
+                new Date("2025-05-28T21:00:00")
+              ),
+              dtPrev: Timestamp.fromDate(
+                new Date("2025-05-28T21:00:00")
+              ),
+              inicioVig: Timestamp.fromDate(
+                new Date("2025-05-28T21:00:00")
+              ),
+              fimVig: Timestamp.fromDate(
+                new Date("2026-05-28T21:00:00")
+              ),
               parc: "1/6",
               baseRepasse: "liquido",
               percentParticipacao: 100,
               percentRepasse: 2.7,
-              prLiqParc:  12790.96,
-              vlBase:  12790.96,
-              vlRepasse: 345.36,
+              prLiqParc: 85.98,
+              vlBase: 3184.62,
+              vlRepasse: 3184.62,
               canceladoSegurado: false,
               obsSegurado: "",
               userImportou: "BBZ",
@@ -110,16 +106,81 @@ async function seedNovosDados() {
           },
         ],
       },
-      // adicione outras milhagens aqui...
+
+
+        {
+        id: "milhagem_083",
+        milhagem: {
+          produtorUid: "X8WgxQEvJYZR4CZkB49Ywgry0Ij1",
+          administradoraId: "BBZ",
+          numeroMilhagem: "MILHAGEM083",
+          percentualComissao: 2.7,
+          valorComissao: 264.15,
+          premioLiquido: 9783.30,
+          premioBruto: 10505.31,
+          descontoComissao: 0.0,
+          quantidadeSegurados: 1,
+          obs: "Comissão Fevereiro",
+          dataCriacao: Timestamp.now(),
+          dataAtualizacao: Timestamp.now(),
+          status: "A",
+        },
+        segurados: [
+          {
+            id: "X8WgxQEvJYZR4CZkB49Ywgry0Ij1",
+            data: {
+              segurado: "CONDOMINIO ESPACO SAO PAULO 2",
+              apolice: "202621160010349",
+              endosso: "",
+              nossoNumero: "19008",
+              ramo: "COND",
+              seguradora: "ALLIANZ",
+              tipo: "N",
+              statusSegurado: "A",
+              statusDoc: "Ativo",
+              dtProposta: Timestamp.fromDate(
+                new Date("2025-05-28T21:00:00")
+              ),
+              dtPrev: Timestamp.fromDate(
+                new Date("2025-05-28T21:00:00")
+              ),
+              inicioVig: Timestamp.fromDate(
+                new Date("2025-05-28T21:00:00")
+              ),
+              fimVig: Timestamp.fromDate(
+                new Date("2026-05-28T21:00:00")
+              ),
+              parc: "1/6",
+              baseRepasse: "liquido",
+              percentParticipacao: 100,
+              percentRepasse: 2.7,
+              prLiqParc: 264.15,
+              vlBase: 9783.30,
+              vlRepasse: 9783.30,
+              canceladoSegurado: false,
+              obsSegurado: "",
+              userImportou: "BBZ",
+            },
+          },
+        ],
+      },
+      // ...adicione outras milhagens aqui...
     ];
 
     for (const { id, milhagem, segurados } of novasMilhagens) {
-      const milhagemRef = doc(collection(db, "milhagemComissoes"), id);
+      const milhagemRef = doc(
+        collection(db, "milhagemComissoes"),
+        id
+      );
       batch.set(milhagemRef, milhagem);
 
       for (const { id: segId, data } of segurados) {
-        const segRef = doc(collection(milhagemRef, "segurados"), segId);
-        await setDoc(segRef, data);
+        const seguradosCollection = collection(
+          milhagemRef,
+          "segurados"
+        );
+        const segRef = doc(seguradosCollection, segId);
+        batch.set(segRef, data);
       }
     }
 

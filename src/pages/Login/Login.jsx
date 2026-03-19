@@ -3,42 +3,43 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../config/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import styles from "./Login.module.css";
-import { FaEye, FaEyeSlash } from 'react-icons/fa'
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
+import { ROUTES } from "../../constants/routes";
+import styles from "./Login.module.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
-  // Função para lidar com o envio do formulário
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      // Autenticar com Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Buscar dados do usuário no Firestore
-      const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+      const userDocRef = doc(db, "usuarios", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
       if (!userDoc.exists()) {
         throw new Error("Usuário não encontrado no Firestore.");
       }
 
       const userData = userDoc.data();
+      const tipoUsuario = userData?.tipoUsuario;
 
-      // Redirecionar com base no tipo de usuário
-      if (userData.tipoUsuario === "admin") {
-        navigate("/master/DashboardMaster");
+      if (tipoUsuario === "admin") {
+        navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
       } else {
-        navigate("/dashboard");
+        navigate(ROUTES.APP_DASHBOARD, { replace: true });
       }
     } catch (error) {
       console.error("Erro ao logar:", error);
@@ -53,9 +54,8 @@ const Login = () => {
       <div className={styles["gradient-bg"]}></div>
 
       <div className={styles["login-wrapper"]}>
-        <div className={styles["loginContainer"]}>
-          <div className={styles["loginBox"]}>
-            {/* Logo */}
+        <div className={styles.loginContainer}>
+          <div className={styles.loginBox}>
             <img
               src="/images/logo.png"
               alt="Fedcorp Logo"
@@ -67,10 +67,8 @@ const Login = () => {
               Insira seus dados para acessar a plataforma
             </p>
 
-            {/* Exibir erro de autenticação */}
             {error && <p className={styles.error}>{error}</p>}
 
-            {/* Formulário de login */}
             <form onSubmit={handleSubmit}>
               <div className={styles.inputGroup}>
                 <label htmlFor="email">E-mail:</label>
@@ -87,6 +85,7 @@ const Login = () => {
 
               <div className={`${styles.inputGroup} ${styles.senhaGroup}`}>
                 <label htmlFor="senha">Senha:</label>
+
                 <div className={styles.senhaWrapper}>
                   <input
                     type={showPassword ? "text" : "password"}
@@ -95,22 +94,25 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={loading}
                   />
 
                   <button
                     type="button"
                     className={styles.togglePassword}
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    disabled={loading}
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
               </div>
 
-
-
-              {/* Botão de login */}
-              <button type="submit" className={styles.loginButton} disabled={loading}>
+              <button
+                type="submit"
+                className={styles.loginButton}
+                disabled={loading}
+              >
                 {loading ? "Entrando..." : "Entrar"}
               </button>
             </form>

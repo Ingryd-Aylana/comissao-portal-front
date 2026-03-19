@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, Search } from "lucide-react";
+
 import UserTable from "../../components/UserTable";
 import ModalNovoUsuario from "./ModalNovoUsuario";
 import "../../components/styles/UsuariosPage.css";
-import { Plus, Search } from "lucide-react";
+
 import {
   getAllUsers,
   searchUsers,
@@ -12,6 +14,7 @@ import { useAdminProtection } from "../../hooks/useAdminProtection";
 
 const UsuariosPage = () => {
   const { loading: authLoading, error: authError } = useAdminProtection();
+
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
@@ -23,13 +26,8 @@ const UsuariosPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [usuarioParaExcluir, setUsuarioParaExcluir] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
-  // PAGINAÇÃO
-  const totalPages = Math.ceil(usuarios.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentUsuarios = usuarios.slice(indexOfFirstItem, indexOfLastItem);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!authLoading && !authError) {
@@ -43,7 +41,7 @@ const UsuariosPage = () => {
       const data = await getAllUsers();
       setUsuarios(data);
       setError(null);
-      setCurrentPage(1); // Resetar para página 1 ao carregar
+      setCurrentPage(1);
     } catch (err) {
       console.error("Erro ao carregar usuários:", err);
       setError("Erro ao carregar usuários. Por favor, tente novamente.");
@@ -63,7 +61,7 @@ const UsuariosPage = () => {
       const results = await searchUsers(searchTerm);
       setUsuarios(results);
       setError(null);
-      setCurrentPage(1); // Resetar para página 1 após busca
+      setCurrentPage(1);
     } catch (err) {
       console.error("Erro na busca:", err);
       setError("Erro ao buscar usuários. Por favor, tente novamente.");
@@ -92,6 +90,7 @@ const UsuariosPage = () => {
       setUsuarios((prev) => [...prev, usuarioSalvo]);
       setMensagemSucesso("Usuário criado com sucesso!");
     }
+
     setTimeout(() => setMensagemSucesso(""), 3000);
     setShowModal(false);
   };
@@ -119,80 +118,98 @@ const UsuariosPage = () => {
     }
   };
 
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(usuarios.length / itemsPerPage));
+  }, [usuarios.length]);
+
+  const currentUsuarios = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return usuarios.slice(indexOfFirstItem, indexOfLastItem);
+  }, [usuarios, currentPage]);
+
   if (authLoading || loading) {
     return (
-      <div className="loading-container">
-        <p>Carregando usuários...</p>
-      </div>
+      <section className="users-page">
+        <div className="users-page__feedback">
+          <p>Carregando usuários...</p>
+        </div>
+      </section>
     );
   }
 
   if (authError) {
     return (
-      <div className="error-container">
-        <p>{authError}</p>
-      </div>
+      <section className="users-page">
+        <div className="users-page__feedback users-page__feedback--error">
+          <p>{authError}</p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="user-page">
-      <div className="usuarios-page-container">
-        <div className="logo-perfil">
-          <img
-            src="/images/logo.png"
-            alt="Logo"
-            className="logo-img perfil-logo"
-          />
-        </div>
+    <section className="users-page">
+      <header className="users-page__header">
+        
 
-        <div className="usuarios-header">
-          <h1 className="usuarios-title">Usuários Cadastrados</h1>
-          <button className="usuarios-button" onClick={handleAddUser}>
-            <Plus className="icon" />
-            Novo Usuário
-          </button>
-        </div>
+        <button className="users-page__primary-button" onClick={handleAddUser}>
+          <Plus size={18} />
+          Novo usuário
+        </button>
+      </header>
 
-        <div className="usuarios-search-bar">
+      <section className="users-page__toolbar">
+        <div className="users-page__search">
           <input
             type="text"
             placeholder="Buscar por nome, CPF ou e-mail..."
-            className="usuarios-search-input"
+            className="users-page__search-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
+
           <button
-            className="usuarios-search-button"
+            className="users-page__secondary-button"
             onClick={handleSearch}
             disabled={searching}
           >
-            <Search className="icon" />
+            <Search size={18} />
             {searching ? "Buscando..." : "Buscar"}
           </button>
         </div>
+      </section>
 
-        {mensagemSucesso && (
-          <div className="mensagem-sucesso">{mensagemSucesso}</div>
-        )}
-        {error && <div className="error-message">{error}</div>}
+      {mensagemSucesso && (
+        <div className="users-page__alert users-page__alert--success">
+          {mensagemSucesso}
+        </div>
+      )}
 
+      {error && (
+        <div className="users-page__alert users-page__alert--error">
+          {error}
+        </div>
+      )}
+
+      <section className="users-page__panel">
         {usuarios.length === 0 ? (
-          <div className="error-message">Nenhum usuário encontrado.</div>
+          <p className="users-page__empty">Nenhum usuário encontrado.</p>
         ) : (
           <>
-            <UserTable
-              usuarios={currentUsuarios}
-              onEdit={handleEditUser}
-              onDelete={handleDeleteUser}
-            />
+            <div className="users-page__table-wrapper">
+              <UserTable
+                usuarios={currentUsuarios}
+                onEdit={handleEditUser}
+                onDelete={handleDeleteUser}
+              />
+            </div>
 
-            <div className="pagination-controls">
+            <div className="users-page__pagination">
               <button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.max(prev - 1, 1))
-                }
+                type="button"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
               >
                 Anterior
@@ -203,6 +220,7 @@ const UsuariosPage = () => {
               </span>
 
               <button
+                type="button"
                 onClick={() =>
                   setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                 }
@@ -213,7 +231,7 @@ const UsuariosPage = () => {
             </div>
           </>
         )}
-      </div>
+      </section>
 
       <ModalNovoUsuario
         isOpen={showModal}
@@ -223,28 +241,35 @@ const UsuariosPage = () => {
       />
 
       {isDeleteModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Confirmar Exclusão</h3>
+        <div className="users-page__modal-backdrop">
+          <div className="users-page__delete-modal">
+            <h3>Confirmar exclusão</h3>
             <p>
               Tem certeza que deseja excluir o usuário{" "}
               <strong>{usuarioParaExcluir?.nome}</strong>?
             </p>
-            <div className="modal-actions">
+
+            <div className="users-page__delete-actions">
               <button
-                className="btn-cancelar"
+                type="button"
+                className="users-page__ghost-button"
                 onClick={() => setIsDeleteModalOpen(false)}
               >
                 Cancelar
               </button>
-              <button className="btn-danger" onClick={confirmarExclusao}>
+
+              <button
+                type="button"
+                className="users-page__danger-button"
+                onClick={confirmarExclusao}
+              >
                 Excluir
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

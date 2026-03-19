@@ -5,10 +5,11 @@ import {
   FaEnvelope,
   FaPhone,
   FaIdCard,
-  FaLock,
   FaRegEdit,
   FaBuilding,
   FaMobileAlt,
+  FaMapMarkerAlt,
+  FaSave,
 } from "react-icons/fa";
 import {
   getCurrentUserFirestoreData,
@@ -19,13 +20,55 @@ function ModalConfirmacao({ isOpen, onClose, message, isError }) {
   if (!isOpen) return null;
 
   return (
-    <div className="modal">
-      <div className={`modal-content ${isError ? "error" : "success"}`}>
+    <div className="producer-profile-modal-overlay">
+      <div
+        className={`producer-profile-modal-box ${
+          isError ? "producer-profile-modal-error" : "producer-profile-modal-success"
+        }`}
+      >
         <h3>{message}</h3>
-        <button className="btn-modal" onClick={onClose}>
+        <button className="producer-profile-modal-button" onClick={onClose}>
           OK
         </button>
       </div>
+    </div>
+  );
+}
+
+function ProfileField({
+  icon,
+  label,
+  name,
+  value,
+  onChange,
+  readOnly,
+  placeholder,
+  fullWidth = false,
+}) {
+  return (
+    <div
+      className={`producer-profile-field ${
+        fullWidth ? "producer-profile-field-full" : ""
+      }`}
+    >
+      <label className="producer-profile-field-label">
+        <span className="producer-profile-field-icon">{icon}</span>
+        <span>{label}</span>
+      </label>
+
+      <input
+        type="text"
+        name={name}
+        value={value}
+        onChange={onChange}
+        readOnly={readOnly}
+        placeholder={placeholder}
+        className={`producer-profile-field-input ${
+          readOnly
+            ? "producer-profile-field-input-readonly"
+            : "producer-profile-field-input-editable"
+        }`}
+      />
     </div>
   );
 }
@@ -36,6 +79,7 @@ export default function PerfilPage() {
   const [modalMessage, setModalMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     nome: "",
     cpf: "",
@@ -50,14 +94,15 @@ export default function PerfilPage() {
     const loadUserData = async () => {
       try {
         const userData = await getCurrentUserFirestoreData();
+
         setFormData({
-          nome: userData.nome || "",
-          cpf: userData.cpf || "",
-          email: userData.email || "",
-          telefone: userData.telefone || "",
-          celular: userData.celular || "",
-          nomeAdministradora: userData.nomeAdministradora || "",
-          endereco: userData.endereco || "",
+          nome: userData?.nome || "",
+          cpf: userData?.cpf || "",
+          email: userData?.email || "",
+          telefone: userData?.telefone || "",
+          celular: userData?.celular || "",
+          nomeAdministradora: userData?.nomeAdministradora || "",
+          endereco: userData?.endereco || "",
         });
       } catch (error) {
         console.error("Erro ao carregar dados do usuário:", error);
@@ -72,7 +117,10 @@ export default function PerfilPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const validateFields = () => {
@@ -81,15 +129,25 @@ export default function PerfilPage() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const telefoneRegex = /^\(?\d{2}\)?\s?\d{4,5}-\d{4}$/;
 
-    if (nome.trim().length < 3)
+    if (nome.trim().length < 3) {
       return "O nome deve ter pelo menos 3 caracteres.";
-    if (!emailRegex.test(email)) return "E-mail inválido.";
-    if (telefone && !telefoneRegex.test(telefone))
+    }
+
+    if (!emailRegex.test(email)) {
+      return "E-mail inválido.";
+    }
+
+    if (telefone && !telefoneRegex.test(telefone)) {
       return "Telefone inválido. Formato esperado: (00) 00000-0000.";
-    if (celular && !telefoneRegex.test(celular))
+    }
+
+    if (celular && !telefoneRegex.test(celular)) {
       return "Celular inválido. Formato esperado: (00) 00000-0000.";
-    if (endereco && endereco.trim().length < 5)
+    }
+
+    if (endereco && endereco.trim().length < 5) {
       return "O endereço deve ter pelo menos 5 caracteres.";
+    }
 
     return "";
   };
@@ -100,24 +158,27 @@ export default function PerfilPage() {
     setShowModal(true);
   };
 
-  const toggleEdit = async () => {
-    if (isEditing) {
-      const validationError = validateFields();
-      if (validationError) {
-        showModalMessage(validationError, true);
-        return;
-      }
-
-      try {
-        await updateUserProfile(formData);
-        showModalMessage("Dados atualizados com sucesso!");
-      } catch (error) {
-        console.error("Erro ao atualizar perfil:", error);
-        showModalMessage("Erro ao atualizar perfil. Tente novamente.", true);
-        return;
-      }
+  const handleEditOrSave = async () => {
+    if (!isEditing) {
+      setIsEditing(true);
+      return;
     }
-    setIsEditing(!isEditing);
+
+    const validationError = validateFields();
+
+    if (validationError) {
+      showModalMessage(validationError, true);
+      return;
+    }
+
+    try {
+      await updateUserProfile(formData);
+      showModalMessage("Dados atualizados com sucesso!");
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Erro ao atualizar perfil:", error);
+      showModalMessage("Erro ao atualizar perfil. Tente novamente.", true);
+    }
   };
 
   if (loading) {
@@ -128,118 +189,125 @@ export default function PerfilPage() {
     );
   }
 
+  const initialLetter = formData.nome?.trim()?.charAt(0)?.toUpperCase() || "P";
+
   return (
     <div className="main">
-      <div className="perfil-container">
-        <div className="logo-perfil">
-          <img
-            src="/images/logo.png"
-            alt="Logo"
-            className="logo-img perfil-logo"
-          />
+      <div className="producer-profile-page">
+        <div className="producer-profile-header">
+          <div className="producer-profile-header-texts">
+            <h1 className="producer-profile-title">Meu Perfil</h1>
+            <p className="producer-profile-subtitle">
+              Gerencie suas informações pessoais.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="producer-profile-top-action"
+            onClick={handleEditOrSave}
+          >
+            {isEditing ? <FaSave /> : <FaRegEdit />}
+            <span>{isEditing ? "Salvar alterações" : "Editar perfil"}</span>
+          </button>
         </div>
 
-        <h1 className="perfil-title">Perfil do Produtor</h1>
+        <div className="producer-profile-card">
+          <div className="producer-profile-banner">
+            <div className="producer-profile-banner-lines" />
 
-        <div className="perfil-card">
-          <div className="perfil-grid">
-            <div className="input-group">
-              <label>
-                <FaUser /> Nome
-              </label>
-              <input
-                name="nome"
-                value={formData.nome}
-                onChange={handleChange}
-                className={isEditing ? "editable" : ""}
-                readOnly={!isEditing}
-              />
-            </div>
+            <div className="producer-profile-avatar">{initialLetter}</div>
 
-            <div className="input-group">
-              <label>
-                <FaIdCard /> CPF
-              </label>
-              <input
-                name="cpf"
-                value={formData.cpf}
-                onChange={handleChange}
-                className={isEditing ? "editable" : ""}
-                readOnly={!isEditing}
-              />
-            </div>
-
-            <div className="input-group">
-              <label>
-                <FaEnvelope /> E-mail
-              </label>
-              <input
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={isEditing ? "editable" : ""}
-                readOnly={!isEditing}
-              />
-            </div>
-
-            <div className="input-group">
-              <label>
-                <FaPhone /> Telefone
-              </label>
-              <input
-                name="telefone"
-                value={formData.telefone}
-                onChange={handleChange}
-                className={isEditing ? "editable" : ""}
-                readOnly={!isEditing}
-                placeholder="(00) 0000-0000"
-              />
-            </div>
-
-            <div className="input-group">
-              <label>
-                <FaMobileAlt /> Celular
-              </label>
-              <input
-                name="celular"
-                value={formData.celular}
-                onChange={handleChange}
-                className={isEditing ? "editable" : ""}
-                readOnly={!isEditing}
-                placeholder="(00) 00000-0000"
-              />
-            </div>
-
-            <div className="input-group">
-              <label>
-                <FaBuilding /> Administradora
-              </label>
-              <input
-                name="nomeAdministradora"
-                value={formData.nomeAdministradora}
-                readOnly
-                className="readonly"
-              />
-            </div>
-
-            <div className="input-group full-width">
-              <label>
-                <FaIdCard /> Endereço
-              </label>
-              <input
-                name="endereco"
-                value={formData.endereco}
-                onChange={handleChange}
-                className={isEditing ? "editable" : ""}
-                readOnly={!isEditing}
-                placeholder="Rua, número, complemento, cidade - UF"
-              />
+            <div className="producer-profile-banner-info">
+              <div className="producer-profile-banner-name">
+                {formData.nome || "Produtor"}
+              </div>
+              <div className="producer-profile-banner-role">
+                Produtor
+                {formData.nomeAdministradora
+                  ? ` · ${formData.nomeAdministradora}`
+                  : ""}
+              </div>
             </div>
           </div>
 
-          <button className="btn-editar" onClick={toggleEdit}>
-            <FaRegEdit /> {isEditing ? "Salvar" : "Editar Perfil"}
-          </button>
+          <div className="producer-profile-content">
+            <section className="producer-profile-section">
+              <h2 className="producer-profile-section-title">
+                Informações Pessoais
+              </h2>
+
+              <div className="producer-profile-grid">
+                <ProfileField
+                  icon={<FaUser />}
+                  label="Nome"
+                  name="nome"
+                  value={formData.nome}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                />
+
+                <ProfileField
+                  icon={<FaIdCard />}
+                  label="CPF"
+                  name="cpf"
+                  value={formData.cpf}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                />
+
+                <ProfileField
+                  icon={<FaEnvelope />}
+                  label="E-mail"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                />
+
+                <ProfileField
+                  icon={<FaPhone />}
+                  label="Telefone"
+                  name="telefone"
+                  value={formData.telefone}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                  placeholder="(00) 0000-0000"
+                />
+
+                <ProfileField
+                  icon={<FaMobileAlt />}
+                  label="Celular"
+                  name="celular"
+                  value={formData.celular}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                  placeholder="(00) 00000-0000"
+                />
+
+                <ProfileField
+                  icon={<FaBuilding />}
+                  label="Administradora"
+                  name="nomeAdministradora"
+                  value={formData.nomeAdministradora}
+                  onChange={handleChange}
+                  readOnly={true}
+                  placeholder="—"
+                />
+
+                <ProfileField
+                  icon={<FaMapMarkerAlt />}
+                  label="Endereço"
+                  name="endereco"
+                  value={formData.endereco}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                  placeholder="Rua, número, complemento, cidade - UF"
+                  fullWidth={true}
+                />
+              </div>
+            </section>
+          </div>
         </div>
 
         <ModalConfirmacao

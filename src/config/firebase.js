@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCV6F7hiyegTZ5iG4Ejn3rWqKQVAex_1UY",
@@ -13,19 +13,31 @@ const firebaseConfig = {
   measurementId: "G-1BF681R6ML",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const analytics = getAnalytics(app);
 
-export { auth, db, analytics };
+let analytics = null;
 
+if (typeof window !== "undefined") {
+  isSupported()
+    .then((supported) => {
+      if (supported) {
+        analytics = getAnalytics(app);
+      }
+    })
+    .catch((error) => {
+      console.warn("Analytics não suportado neste ambiente:", error);
+    });
+}
 
+export { app, auth, db, analytics };
+
+// INSERIR NOVOS DADOS NO BANCO
 // const app = initializeApp(firebaseConfig);
 // const db = getFirestore(app);
 
-// export {db };
+// export { db, Timestamp };
 
 
 

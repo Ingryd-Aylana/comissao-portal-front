@@ -1,190 +1,386 @@
-.relatorios-container {
-  margin: 2rem auto;
-  padding: 0 1.5rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.relatorios-page-modern {
   width: 100%;
-  max-width: 1000px;
-  box-sizing: border-box;
+  padding: 0;
 }
 
-/* Título principal da página */
-.relatorios-container h1 {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: #003D6B;
-  text-align: center;
-}
-
-/* Banner do topo */
-.top-banner img {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-/* Barra de busca */
-.relatorio-filtro {
+.relatorios-page-header {
   display: flex;
   align-items: center;
-  margin-bottom: 1.5rem;
-  background-color: #f1f1f1;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  max-width: 100%;
-  gap: 0.5rem;
-  width: 100%;
-  box-sizing: border-box;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
-.relatorio-filtro input {
-  flex: 1;
+.relatorios-page-header h1 {
+  margin: 0;
+  font-size: 42px;
+  line-height: 1.1;
+  color: #19325b;
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+}
+
+.relatorios-page-header p {
+  margin: 6px 0 0;
+  font-size: 18px;
+  color: #5f7391;
+}
+
+.relatorios-top-btn {
   border: none;
-  background: transparent;
-  outline: none;
-  font-size: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.search-icon {
-  color: #0F3D5D;
-  font-size: 1.2rem;
-}
-
-/* Wrapper da tabela para permitir rolagem horizontal */
-.relatorio-tabela-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  display: block;
-  box-sizing: border-box;
-}
-
-/* Tabela dos relatórios */
-.relatorios-table {
-  min-width: 600px; /* suficiente para scroll no mobile */
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  table-layout: auto; /* Evita colunas desnecessariamente largas */
-  box-sizing: border-box;
-}
-
-.relatorios-table th, .relatorios-table td {
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-.relatorios-table th {
-  background-color: #0F3D5D;
-  color: white;
-}
-
-/* Botões de exportação */
-.btn-export {
-  margin-right: 0.5rem;
-  padding: 0.45rem 0.9rem;
-  border: none;
-  border-radius: 4px;
-  font-weight: 600;
-  cursor: pointer;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2f7de1, #1f5fb5);
+  color: #fff;
+  padding: 14px 22px;
+  font-size: 16px;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(47, 125, 225, 0.22);
+  transition: 0.2s ease;
 }
 
-.btn-export.pdf {
-  background-color: #e74c3c;
-  color: white;
+.relatorios-top-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
 }
 
-.btn-export.excel {
-  background-color: #27ae60;
-  color: white;
-}
-
-.btn-export:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-}
-
-/* Estado de desabilitado durante download */
-.btn-export:disabled {
-  opacity: 0.6;
+.relatorios-top-btn:disabled,
+.relatorios-hero-excel-btn:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
-/* Ajustes para telas menores */
-@media (max-width: 600px) {
-  .relatorios-container {
-    padding: 0 1rem;
-    margin: 0 auto;
+/* hero */
+.relatorios-hero {
+   background: linear-gradient(120deg, #0f3d5d 55%, #1f5f8b 100%);
+  border-radius: 20px;
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  margin-bottom: 20px;
+}
+
+.relatorios-hero-lines {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 250px;
+  opacity: 0.08;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 12px,
+    rgba(255, 255, 255, 1) 12px,
+    rgba(255, 255, 255, 1) 13px
+  );
+}
+
+.relatorios-hero-text {
+  position: relative;
+  z-index: 1;
+}
+
+.relatorios-hero-greeting {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.relatorios-hero-title {
+  font-family: "Fraunces", serif;
+  font-size: 22px;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.relatorios-hero-title span {
+  color: #f0a500;
+}
+
+.relatorios-hero-excel-btn {
+  position: relative;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: #ffffff;
+  color: #2d4f83;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* tabs */
+.relatorios-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #dbe2ec;
+  border-radius: 14px;
+  padding: 5px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+  margin-bottom: 20px;
+}
+
+.relatorios-tab {
+  border: none;
+  background: transparent;
+  color: #526b90;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.relatorios-tab.active {
+  background: #173b78;
+  color: #fff;
+}
+
+.relatorios-tab:hover {
+  color: #173b78;
+}
+
+/* card */
+.relatorios-card {
+  background: #ffffff;
+  border: 1px solid #dbe2ec;
+  border-radius: 22px;
+  padding: 20px;
+  min-height: 340px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.relatorios-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 26px;
+  flex-wrap: wrap;
+}
+
+.relatorios-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f4f7fb;
+  border: 1px solid #d3dbe7;
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-width: 320px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.relatorios-search-icon {
+  color: #8ea1bc;
+  flex-shrink: 0;
+}
+
+.relatorios-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  color: #19325b;
+  font-size: 16px;
+}
+
+.relatorios-search-input::placeholder {
+  color: #98a7bd;
+}
+
+.relatorios-count {
+  color: #98a7bd;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* table */
+.relatorios-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.relatorios-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.relatorios-table thead th {
+  text-align: left;
+  padding: 14px 16px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8a9ab2;
+  border-bottom: 1px solid #e7edf5;
+  background: #f8fafc;
+}
+
+.relatorios-table tbody td {
+  padding: 16px;
+  font-size: 16px;
+  color: #19325b;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: middle;
+}
+
+.relatorios-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-export {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.btn-export.pdf {
+  background: rgba(220, 53, 69, 0.12);
+  color: #c62828;
+}
+
+.btn-export.pdf:hover {
+  background: rgba(220, 53, 69, 0.18);
+}
+
+.btn-export.excel {
+  background: rgba(25, 135, 84, 0.12);
+  color: #1b7f4c;
+}
+
+.btn-export.excel:hover {
+  background: rgba(25, 135, 84, 0.18);
+}
+
+/* empty state */
+.relatorios-empty-state {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.relatorios-empty-icon {
+  color: #d08c47;
+  margin-bottom: 10px;
+}
+
+.relatorios-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #334e78;
+  margin-bottom: 4px;
+}
+
+.relatorios-empty-desc {
+  max-width: 420px;
+  font-size: 15px;
+  color: #9aa9bf;
+  line-height: 1.45;
+}
+
+.loading-container,
+.error-container {
+  padding: 32px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .relatorios-page-header h1 {
+    font-size: 32px;
   }
 
-  .relatorios-container h1 {
-    font-size: 1.5rem;
-    text-align: center;
+  .relatorios-page-header p {
+    font-size: 16px;
   }
 
-  .relatorio-filtro {
+  .relatorios-top-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .relatorios-hero {
+    padding: 18px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .relatorios-hero-excel-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .relatorios-tabs {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .relatorios-toolbar {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
-    padding: 0.75rem;
   }
 
-  .relatorio-filtro input {
-    width: 100%;
-    font-size: 0.95rem;
-  }
-
-  .relatorios-table {
+  .relatorios-search-box {
     min-width: 100%;
-    font-size: 0.85rem;
+    max-width: 100%;
   }
 
-  .relatorios-table th,
-  .relatorios-table td {
-    padding: 0.75rem;
+  .relatorios-count {
+    text-align: right;
+  }
+}
+
+@media (max-width: 640px) {
+  .relatorios-card {
+    padding: 16px;
+  }
+
+  .relatorios-hero-title {
+    font-size: 19px;
+  }
+
+  .relatorios-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .btn-export {
-    width: 80%;
+    width: 100%;
     justify-content: center;
-    font-size: 0.75rem;
-    padding: 0.6rem 1rem;
   }
-}
-
-.print-container {
-  background: white;
-  color: black;
-  font-family: Arial, sans-serif;
-  padding: 20px;
-  width: 800px; /* largura fixa para a área do pdf */
-  box-sizing: border-box;
-}
-
-/* Ajuste extra para dispositivos muito pequenos */
-@media (max-width: 480px) {
-  .btn-export {
-    padding: 0.6rem 1rem;
-  }
-}
-
-/* Correção global para evitar estouro horizontal */
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
 }
