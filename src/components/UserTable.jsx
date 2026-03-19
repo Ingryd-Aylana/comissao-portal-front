@@ -1,110 +1,100 @@
-import React, { useState } from "react";
+import React from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import "../components/styles/UserTable.css";
-import { deleteUserById } from "../services/userService";
 
 const UserTable = ({ usuarios = [], onEdit, onDelete }) => {
-  const [feedback, setFeedback] = useState({ type: "", message: "" });
-  const [modalState, setModalState] = useState({ open: false, usuario: null });
-
-  const handleDelete = (usuario) => {
-    setModalState({ open: true, usuario });
-  };
-
-  const confirmDelete = async () => {
-    const { usuario } = modalState;
-    try {
-      await deleteUserById(usuario.id);
-      onDelete(usuario.id);
-      setFeedback({ type: "success", message: "Usuário excluído com sucesso!" });
-    } catch (error) {
-      console.error("Erro ao excluir:", error);
-      setFeedback({
-        type: "error",
-        message: "Erro ao excluir o usuário. Tente novamente.",
-      });
-    } finally {
-      setModalState({ open: false, usuario: null });
-      setTimeout(() => setFeedback({ type: "", message: "" }), 3000);
-    }
-  };
-
-  const closeModal = () => {
-    setModalState({ open: false, usuario: null });
-  };
+  if (usuarios.length === 0) {
+    return <div className="user-table-empty">Nenhum usuário encontrado.</div>;
+  }
 
   return (
-    <div className="user-table-wrapper">
-      {/* Feedback */}
-      {feedback.message && (
-        <div className={`feedback ${feedback.type}`}>{feedback.message}</div>
-      )}
+    <div className="user-table-shell">
+      <table className="user-table-modern">
+        <colgroup>
+          <col className="col-nome" />
+          <col className="col-cpf" />
+          <col className="col-email" />
+          <col className="col-tipo" />
+          <col className="col-status" />
+          <col className="col-acoes" />
+        </colgroup>
 
-      {/* Tabela */}
-      {usuarios.length === 0 ? (
-        <div className="loading">Nenhum usuário encontrado.</div>
-      ) : (
-        <table className="user-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>CPF</th>
-              <th>E-mail</th>
-              <th>Tipo</th>
-              <th>Status</th>
-              <th className="acoes">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {usuarios.map((user) => (
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>CPF</th>
+            <th>E-mail</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th className="user-table-modern__actions-column">Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {usuarios.map((user) => {
+            const tipo = user.tipoUsuario === "admin" ? "Administrador" : "Produtor";
+            const tipoClass =
+              user.tipoUsuario === "admin"
+                ? "user-badge user-badge--admin"
+                : "user-badge user-badge--produtor";
+
+            const status = user.status === "ativo" ? "Ativo" : "Inativo";
+            const statusClass =
+              user.status === "ativo"
+                ? "user-status user-status--ativo"
+                : "user-status user-status--inativo";
+
+            return (
               <tr key={user.id}>
-                <td>{user.nome || "—"}</td>
-                <td>{user.cpf || "—"}</td>
-                <td>{user.email || "—"}</td>
+                <td title={user.nome || "—"}>
+                  <span className="cell-text">{user.nome || "—"}</span>
+                </td>
+
+                <td title={user.cpf || "—"}>
+                  <span className="cell-text">{user.cpf || "—"}</span>
+                </td>
+
+                <td title={user.email || "—"}>
+                  <span className="cell-text">{user.email || "—"}</span>
+                </td>
+
                 <td>
-                  <span className={`tipo-badge ${user.tipoUsuario}`}>
-                    {user.tipoUsuario === "admin" ? "Administrador" : "Produtor"}
+                  <span className={tipoClass}>{tipo}</span>
+                </td>
+
+                <td>
+                  <span className={statusClass}>
+                    <span className="user-status__dot"></span>
+                    {status}
                   </span>
                 </td>
-                <td>
-                  <span className={`status-badge ${user.status}`}>
-                    <span className="status-dot"></span>
-                    {user.status === "ativo" ? "Ativo" : "Inativo"}
-                  </span>
-                </td>
-                <td className="acoes">
-                  <button className="btn-outline" onClick={() => onEdit(user)}>
-                    Editar
+
+                <td className="user-table-modern__actions">
+                  <button
+                    type="button"
+                    className="user-table-modern__icon-button user-table-modern__icon-button--edit"
+                    onClick={() => onEdit(user)}
+                    title="Editar usuário"
+                    aria-label="Editar usuário"
+                  >
+                    <Pencil size={16} />
                   </button>
-                  <button className="btn-danger" onClick={() => handleDelete(user)}>
-                    Excluir
+
+                  <button
+                    type="button"
+                    className="user-table-modern__icon-button user-table-modern__icon-button--delete"
+                    onClick={() => onDelete(user)}
+                    title="Excluir usuário"
+                    aria-label="Excluir usuário"
+                  >
+                    <Trash2 size={16} />
                   </button>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {/* Modal de confirmação */}
-      {modalState.open && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Confirmar Exclusão</h3>
-            <p>
-              Deseja realmente excluir{" "}
-              <strong>{modalState.usuario?.nome || "este usuário"}</strong>?
-            </p>
-            <div className="modal-actions">
-              <button className="btn-outline" onClick={closeModal}>
-                Cancelar
-              </button>
-              <button className="btn-danger" onClick={confirmDelete}>
-                Excluir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 };

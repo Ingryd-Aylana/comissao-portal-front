@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
+import { FileSpreadsheet, Upload, Send, Search } from "lucide-react";
+
 import "../../components/styles/UploadCard.css";
-import { FaFileExcel, FaUpload, FaPaperPlane } from "react-icons/fa";
-import { getAllProdutores, searchProdutoresByNomeOuEmail } from "../../services/userService";
+import {
+  getAllProdutores,
+  searchProdutoresByNomeOuEmail,
+} from "../../services/userService";
 
 export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
   const [fileName, setFileName] = useState("");
@@ -14,21 +18,26 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
   const [produtores, setProdutores] = useState([]);
   const [inputBusca, setInputBusca] = useState("");
   const [produtorSelecionado, setProdutorSelecionado] = useState("");
+  const [loadingProdutores, setLoadingProdutores] = useState(false);
 
   useEffect(() => {
     const buscar = async () => {
       try {
+        setLoadingProdutores(true);
+
         if (inputBusca.trim().length >= 3) {
           const resultados = await searchProdutoresByNomeOuEmail(inputBusca);
           setProdutores(resultados);
-          setError(""); 
+          setError("");
         } else {
           const todos = await getAllProdutores();
           setProdutores(todos);
-          setError(""); 
+          setError("");
         }
       } catch (err) {
         console.error("Erro ao carregar produtores:", err);
+      } finally {
+        setLoadingProdutores(false);
       }
     };
 
@@ -37,16 +46,24 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
   }, [inputBusca]);
 
   const handleFileUpload = (event) => {
-    const file = event.target.files[0];
+    const file = event.target.files?.[0];
     setSuccess(false);
-    if (!file) return setError("Nenhum arquivo selecionado.");
-    if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls"))
-      return setError("Formato inválido. Envie um arquivo .xlsx ou .xls.");
+
+    if (!file) {
+      setError("Nenhum arquivo selecionado.");
+      return;
+    }
+
+    if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
+      setError("Formato inválido. Envie um arquivo .xlsx ou .xls.");
+      return;
+    }
 
     setFileName(file.name);
     setError("");
 
     const reader = new FileReader();
+
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
@@ -55,11 +72,18 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-        if (jsonData.length === 0) return setError("A planilha está vazia.");
+        if (jsonData.length === 0) {
+          setError("A planilha está vazia.");
+          return;
+        }
 
         setDados(jsonData);
-        onDataParsed(jsonData);
+
+        if (typeof onDataParsed === "function") {
+          onDataParsed(jsonData);
+        }
       } catch (err) {
+        console.error("Erro ao processar arquivo:", err);
         setError("Erro ao processar o arquivo.");
       }
     };
@@ -72,9 +96,11 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
     setProdutorSelecionado(produtor.id);
   };
 
-  const produtoresFiltrados = produtores.filter((p) =>
-    `${p.nome} ${p.email}`.toLowerCase().includes(inputBusca.toLowerCase())
-  );
+  const produtoresFiltrados = useMemo(() => {
+    return produtores.filter((p) =>
+      `${p.nome} ${p.email}`.toLowerCase().includes(inputBusca.toLowerCase())
+    );
+  }, [produtores, inputBusca]);
 
   const handleSendSpreadsheet = async () => {
     setIsSending(true);
@@ -93,7 +119,9 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
         }),
       });
 
-      if (!response.ok) throw new Error("Falha ao enviar para o servidor.");
+      if (!response.ok) {
+        throw new Error("Falha ao enviar para o servidor.");
+      }
 
       const resultado = await response.json();
       console.log("Resposta do servidor:", resultado);
@@ -107,76 +135,139 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
   };
 
   return (
-    <section className="upload-card">
-      <div className="upload-container">
-        <img src="/images/logo.png" alt="Logo" className="logo-perfil" />
-        <h2 className="upload-title">
-          <FaFileExcel className="icon-xl" />
-          Importar Arquivo Excel
-        </h2>
+    <section className="upload-page">
 
-        <div className="upload-select-produtor">
-          <label htmlFor="busca-produtor">Selecione o produtor:</label>
-          <input
-            type="text"
-            id="busca-produtor"
-            placeholder="Digite o nome ou e-mail..."
-            value={inputBusca}
-            onChange={(e) => {
-              setInputBusca(e.target.value);
-              setProdutorSelecionado(""); 
-            }}
-            className="upload-produtor-dropdown"
-          />
-          {inputBusca && produtoresFiltrados.length > 0 && (
-            <ul className="autocomplete-list">
-              {produtoresFiltrados.map((p) => (
-                <li
-                  key={p.id}
-                  onClick={() => handleSelectProdutor(p)}
-                  className="autocomplete-item"
-                >
-                  {p.nome} ({p.email})
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      <div className="upload-page__grid">
+        <section className="upload-panel">
+          <div className="upload-panel__head">
+            <div className="upload-panel__icon">
+              <FileSpreadsheet size={22} />
+            </div>
 
-        
-        <label htmlFor="file-upload" className="upload-label">
-          <FaUpload className="icon-sm" />
-          Escolher arquivo
-        </label>
-        <input
-          id="file-upload"
-          type="file"
-          accept=".xlsx, .xls"
-          onChange={handleFileUpload}
-          className="hidden-input"
-        />
+            <div>
+              <h3>Upload do arquivo</h3>
+              <p>Arquivos aceitos: .xlsx e .xls</p>
+            </div>
+          </div>
 
-        {fileName && (
-          <p className="file-name">
-            📁 Arquivo: <strong>{fileName}</strong>
-          </p>
-        )}
+          <div className="upload-panel__content">
+            <div className="upload-field">
+              <label htmlFor="busca-produtor" className="upload-field__label">
+                Produtor
+              </label>
 
-        {error && <p className="error-alert">⚠️ {error}</p>}
-        {success && <p className="success-alert">Planilha enviada!</p>}
+              <div className="upload-autocomplete">
+                <div className="upload-autocomplete__input-wrap">
+                  <Search size={18} className="upload-autocomplete__icon" />
+                  <input
+                    type="text"
+                    id="busca-produtor"
+                    placeholder="Digite o nome ou e-mail..."
+                    value={inputBusca}
+                    onChange={(e) => {
+                      setInputBusca(e.target.value);
+                      setProdutorSelecionado("");
+                    }}
+                    className="upload-autocomplete__input"
+                  />
+                </div>
 
-        <button
-          className="btn-enviar"
-          onClick={handleSendSpreadsheet}
-          disabled={dados.length === 0 || isSending || !produtorSelecionado}
-        >
-          {isSending ? "⏳ Enviando..." : (
-            <>
-              <FaPaperPlane className="icon-sm" />
-              Enviar Planilha
-            </>
-          )}
-        </button>
+                {inputBusca && produtoresFiltrados.length > 0 && (
+                  <ul className="upload-autocomplete__list">
+                    {produtoresFiltrados.map((p) => (
+                      <li
+                        key={p.id}
+                        onClick={() => handleSelectProdutor(p)}
+                        className="upload-autocomplete__item"
+                      >
+                        <strong>{p.nome}</strong>
+                        <span>{p.email}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {loadingProdutores && (
+                <p className="upload-field__hint">Carregando produtores...</p>
+              )}
+            </div>
+
+            <div className="upload-field">
+              <label htmlFor="file-upload" className="upload-field__label">
+                Arquivo
+              </label>
+
+              <label htmlFor="file-upload" className="upload-file-picker">
+                <Upload size={18} />
+                Escolher arquivo
+              </label>
+
+              <input
+                id="file-upload"
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleFileUpload}
+                className="upload-hidden-input"
+              />
+
+              {fileName && (
+                <div className="upload-file-info">
+                  <span>Arquivo selecionado</span>
+                  <strong>{fileName}</strong>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="upload-alert upload-alert--error">{error}</div>
+            )}
+
+            {success && (
+              <div className="upload-alert upload-alert--success">
+                Planilha enviada com sucesso!
+              </div>
+            )}
+
+            <div className="upload-actions">
+              <button
+                type="button"
+                className="upload-submit-button"
+                onClick={handleSendSpreadsheet}
+                disabled={
+                  dados.length === 0 || isSending || !produtorSelecionado
+                }
+              >
+                {isSending ? (
+                  "Enviando..."
+                ) : (
+                  <>
+                    <Send size={18} />
+                    Enviar planilha
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <aside className="upload-side-card">
+          <h3>Regras rápidas</h3>
+
+          <ul className="upload-side-card__list">
+            <li>Selecione o produtor antes de enviar a planilha.</li>
+            <li>Use apenas arquivos Excel nos formatos permitidos.</li>
+            <li>Verifique se a planilha não está vazia.</li>
+            <li>Após o envio, valide o processamento dos dados.</li>
+          </ul>
+
+          <div className="upload-side-card__status">
+            <span className="upload-side-card__status-label">
+              Linhas carregadas
+            </span>
+            <strong>{dados.length}</strong>
+          </div>
+        </aside>
       </div>
     </section>
   );

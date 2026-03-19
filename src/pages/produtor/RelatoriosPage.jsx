@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../../components/styles/RelatoriosPage.css";
-import RelatorioImagem from "../../components/RelatorioImagem";
-import { FaFilePdf, FaFileExcel, FaSearch } from "react-icons/fa";
+import {
+  FaFilePdf,
+  FaFileExcel,
+} from "react-icons/fa";
+import { Search, ClipboardList } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
@@ -15,8 +18,6 @@ import {
   getCurrentUserFirestoreData,
 } from "../../services/comissaoService";
 
-import useProducerData from "../../hooks/UseProducerData";
-
 export default function RelatoriosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [relatorios, setRelatorios] = useState([]);
@@ -24,29 +25,36 @@ export default function RelatoriosPage() {
   const [error, setError] = useState(null);
   const [producerData, setProducerData] = useState(null);
   const [pdfRelatorioSelecionado, setPdfRelatorioSelecionado] = useState(null);
+  const [activeTab, setActiveTab] = useState("Mensal");
 
   const printRef = useRef();
-  const { recentCommissions } = useProducerData();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+
         const userData = await getCurrentUserFirestoreData();
         setProducerData(userData);
 
         const milhagens = await getMilhagensDoUsuarioLogado();
-        console.log("Datas carregadas:", milhagens.map(m => m.dataCriacao));
 
         const relatoriosPorMes = milhagens.reduce((acc, milhagem) => {
           const data = new Date(milhagem.dataCriacao);
 
           if (data.getFullYear() === 2025 && data.getMonth() === 6) {
-            data.setMonth(5); // Corrigir Julho para Junho
+            data.setMonth(5);
           }
 
-          const mesKey = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
-          const mes = new Date(data.getFullYear(), data.getMonth(), 1).toLocaleDateString("pt-BR", {
+          const mesKey = `${data.getFullYear()}-${String(
+            data.getMonth() + 1
+          ).padStart(2, "0")}`;
+
+          const mes = new Date(
+            data.getFullYear(),
+            data.getMonth(),
+            1
+          ).toLocaleDateString("pt-BR", {
             month: "long",
             year: "numeric",
           });
@@ -69,7 +77,10 @@ export default function RelatoriosPage() {
         }, {});
 
         const relatoriosArray = Object.values(relatoriosPorMes).sort((a, b) => {
-          return new Date(b.dataGeracao.split("/").reverse().join("-")) - new Date(a.dataGeracao.split("/").reverse().join("-"));
+          return (
+            new Date(b.dataGeracao.split("/").reverse().join("-")) -
+            new Date(a.dataGeracao.split("/").reverse().join("-"))
+          );
         });
 
         setRelatorios(relatoriosArray);
@@ -118,9 +129,13 @@ export default function RelatoriosPage() {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
 
-      pdf.save(`relatorio-milhagem-${formattedName}-${relatorio.mes}.pdf`);
-    } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
+      const nomeArquivo = relatorio
+        ? `relatorio-milhagem-${formattedName}-${relatorio.mes}.pdf`
+        : `relatorios-milhagem-${formattedName}.pdf`;
+
+      pdf.save(nomeArquivo);
+    } catch (err) {
+      console.error("Erro ao gerar PDF:", err);
     } finally {
       setPdfRelatorioSelecionado(null);
     }
@@ -130,16 +145,16 @@ export default function RelatoriosPage() {
     try {
       const dadosMensais = relatorio.detalhes.flatMap((milhagem) =>
         (milhagem.segurados || []).map((segurado) => ({
-          "Segurado": segurado.segurado || "-",
-          "Apólice": segurado.apolice || "-",
+          Segurado: segurado.segurado || "-",
+          Apólice: segurado.apolice || "-",
           "Início Vigência":
             segurado.inicioVig && segurado.inicioVig.toDate
               ? segurado.inicioVig.toDate().toLocaleDateString("pt-BR")
               : segurado.inicioVig instanceof Date
-                ? segurado.inicioVig.toLocaleDateString("pt-BR")
-                : "-",
+              ? segurado.inicioVig.toLocaleDateString("pt-BR")
+              : "-",
           "Prêmio Líquido": segurado.prLiqParc || 0,
-          "Milhagem": segurado.vlRepasse || 0,
+          Milhagem: segurado.vlRepasse || 0,
         }))
       );
 
@@ -163,76 +178,155 @@ export default function RelatoriosPage() {
     }
   };
 
-
   const filteredRelatorios = relatorios.filter((relatorio) =>
     relatorio.mes.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div className="loading-container"><p>Carregando relatórios...</p></div>;
-  if (error) return <div className="error-container"><p>{error}</p></div>;
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <p>Carregando relatórios...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="main">
-      <div className="relatorios-container">
-        <RelatorioImagem />
+      <div className="relatorios-page-modern">
+        <div className="relatorios-page-header">
+          <div>
+            <h1>Relatórios</h1>
+            <p>Acompanhe e exporte seus dados de comissão.</p>
+          </div>
 
-        <h1>Relatórios Disponíveis</h1>
-
-        <div className="relatorio-filtro">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Buscar por mês..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <button
+            className="relatorios-top-btn"
+            onClick={() => {
+              if (filteredRelatorios[0]) {
+                handleDownloadPdf(filteredRelatorios[0]);
+              }
+            }}
+            disabled={!filteredRelatorios.length}
+          >
+            <FaFilePdf />
+            <span>Exportar PDF</span>
+          </button>
         </div>
 
-        {filteredRelatorios.length > 0 ? (
-          <table className="relatorios-table">
-            <thead>
-              <tr>
-                <th>Mês</th>
-                <th>Data de Geração</th>
-                <th>Milhagem</th>
-                <th>Exportar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRelatorios.map((relatorio, index) => (
-                <tr key={index}>
-                  <td>{relatorio.mes}</td>
-                  <td>{relatorio.dataGeracao}</td>
-                  <td>{new Intl.NumberFormat("pt-BR", {
-                    style: "currency", currency: "BRL"
-                  }).format(relatorio.milhagem)}</td>
-                  <td>
-                    <button
-                      className="btn-export pdf"
-                      onClick={() => handleDownloadPdf(relatorio)}
-                    >
-                      <FaFilePdf /> PDF
-                    </button>
-                    <button
-                      className="btn-export excel"
-                      onClick={() => handleDownloadExcel(relatorio)}
-                      style={{ marginLeft: "8px" }}
-                    >
-                      <FaFileExcel /> Excel
-                    </button>
+        <div className="relatorios-hero">
+          <div className="relatorios-hero-lines" />
 
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="no-data-message">
-            {searchTerm
-              ? "Nenhum relatório encontrado para o período pesquisado."
-              : "Nenhum relatório disponível."}
-          </p>
-        )}
+          <div className="relatorios-hero-text">
+            <div className="relatorios-hero-greeting">Relatórios disponíveis</div>
+            <div className="relatorios-hero-title">
+              Acompanhe seus relatórios <span>em tempo real</span>
+            </div>
+          </div>
+
+          <button
+            className="relatorios-hero-excel-btn"
+            onClick={() => {
+              if (filteredRelatorios[0]) {
+                handleDownloadExcel(filteredRelatorios[0]);
+              }
+            }}
+            disabled={!filteredRelatorios.length}
+          >
+            <FaFileExcel />
+            <span>Excel</span>
+          </button>
+        </div>
+
+       
+
+        <div className="relatorios-card">
+          <div className="relatorios-toolbar">
+            <div className="relatorios-search-box">
+              <Search size={16} strokeWidth={2} className="relatorios-search-icon" />
+              <input
+                type="text"
+                placeholder="Buscar por mês..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="relatorios-search-input"
+              />
+            </div>
+
+            <div className="relatorios-count">
+              {filteredRelatorios.length > 0
+                ? `${filteredRelatorios.length} relatório${filteredRelatorios.length > 1 ? "s" : ""} encontrado${filteredRelatorios.length > 1 ? "s" : ""}.`
+                : "Nenhum relatório disponível."}
+            </div>
+          </div>
+
+          {filteredRelatorios.length > 0 ? (
+            <div className="relatorios-table-wrapper">
+              <table className="relatorios-table">
+                <thead>
+                  <tr>
+                    <th>Mês</th>
+                    <th>Data de Geração</th>
+                    <th>Milhagem</th>
+                    <th>Exportar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRelatorios.map((relatorio, index) => (
+                    <tr key={index}>
+                      <td>{relatorio.mes}</td>
+                      <td>{relatorio.dataGeracao}</td>
+                      <td>
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(relatorio.milhagem)}
+                      </td>
+                      <td>
+                        <div className="relatorios-actions">
+                          <button
+                            className="btn-export pdf"
+                            onClick={() => handleDownloadPdf(relatorio)}
+                          >
+                            <FaFilePdf />
+                            <span>PDF</span>
+                          </button>
+
+                          <button
+                            className="btn-export excel"
+                            onClick={() => handleDownloadExcel(relatorio)}
+                          >
+                            <FaFileExcel />
+                            <span>Excel</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="relatorios-empty-state">
+              <div className="relatorios-empty-icon">
+                <ClipboardList size={40} strokeWidth={1.8} />
+              </div>
+
+              <div className="relatorios-empty-title">Sem relatórios ainda</div>
+
+              <div className="relatorios-empty-desc">
+                Quando importações forem feitas pelo admin, os relatórios aparecerão aqui.
+              </div>
+            </div>
+          )}
+        </div>
 
         {pdfRelatorioSelecionado && (
           <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
@@ -257,8 +351,8 @@ export default function RelatoriosPage() {
                       segurado.inicioVig && segurado.inicioVig.toDate
                         ? segurado.inicioVig.toDate().toLocaleDateString("pt-BR")
                         : segurado.inicioVig instanceof Date
-                          ? segurado.inicioVig.toLocaleDateString("pt-BR")
-                          : "-",
+                        ? segurado.inicioVig.toLocaleDateString("pt-BR")
+                        : "-",
                     netPremium: segurado.prLiqParc || 0,
                     commission: segurado.vlRepasse || 0,
                   }))

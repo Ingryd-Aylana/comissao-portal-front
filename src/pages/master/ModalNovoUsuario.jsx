@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { FaUser } from "react-icons/fa";
+import { User, X } from "lucide-react";
 import { createUser, updateUser } from "../../services/userService";
+
+const initialState = {
+  nome: "",
+  cpf: "",
+  email: "",
+  senha: "",
+  telefone: "",
+  celular: "",
+  endereco: "",
+  tipoUsuario: "produtor",
+  nomeAdministradora: "",
+  status: "ativo",
+};
 
 const ModalNovoUsuario = ({
   isOpen,
@@ -10,20 +23,11 @@ const ModalNovoUsuario = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({
-    nome: "",
-    cpf: "",
-    email: "",
-    senha: "",
-    telefone: "",
-    celular: "",
-    endereco: "",
-    tipoUsuario: "produtor",
-    nomeAdministradora: "",
-    status: "ativo",
-  });
+  const [formData, setFormData] = useState(initialState);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (usuarioParaEditar) {
       setFormData({
         nome: usuarioParaEditar.nome || "",
@@ -38,19 +42,9 @@ const ModalNovoUsuario = ({
         status: usuarioParaEditar.status || "ativo",
       });
     } else {
-      setFormData({
-        nome: "",
-        cpf: "",
-        email: "",
-        senha: "",
-        telefone: "",
-        celular: "",
-        endereco: "",
-        tipoUsuario: "produtor",
-        nomeAdministradora: "",
-        status: "ativo",
-      });
+      setFormData(initialState);
     }
+
     setError("");
   }, [usuarioParaEditar, isOpen]);
 
@@ -70,21 +64,36 @@ const ModalNovoUsuario = ({
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const telefoneRegex = /^\(?\d{2}\)?\s?\d{4,5}-\d{4}$/;
 
-    if (nome.length < 3) return "O nome deve ter pelo menos 3 caracteres.";
-    if (cpfLimpo.length !== 11) return "CPF inválido. Deve conter 11 dígitos numéricos.";
-    if (!emailRegex.test(email)) return "E-mail inválido.";
-    if (!usuarioParaEditar && senha.length < 6)
+    if (nome.trim().length < 3) {
+      return "O nome deve ter pelo menos 3 caracteres.";
+    }
+
+    if (cpfLimpo.length !== 11) {
+      return "CPF inválido. Deve conter 11 dígitos numéricos.";
+    }
+
+    if (!emailRegex.test(email)) {
+      return "E-mail inválido.";
+    }
+
+    if (!usuarioParaEditar && senha.length < 6) {
       return "A senha deve ter pelo menos 6 caracteres.";
-    if (telefone && !telefoneRegex.test(telefone))
+    }
+
+    if (telefone && !telefoneRegex.test(telefone)) {
       return "Telefone inválido. Formato esperado: (00) 0000-0000";
-    if (celular && !telefoneRegex.test(celular))
+    }
+
+    if (celular && !telefoneRegex.test(celular)) {
       return "Celular inválido. Formato esperado: (00) 00000-0000";
+    }
 
     return "";
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const validationError = validateFields();
     if (validationError) {
       setError(validationError);
@@ -94,20 +103,25 @@ const ModalNovoUsuario = ({
     setLoading(true);
     setError("");
 
-    formData.cpf = cleanCPF(formData.cpf);
+    const payload = {
+      ...formData,
+      cpf: cleanCPF(formData.cpf),
+    };
 
     try {
       if (usuarioParaEditar) {
-        await updateUser(usuarioParaEditar.id, formData);
+        await updateUser(usuarioParaEditar.id, payload);
+
         const usuarioAtualizado = {
           ...usuarioParaEditar,
-          ...formData,
+          ...payload,
           id: usuarioParaEditar.id,
         };
+
         onSave(usuarioAtualizado);
       } else {
-        const novoId = await createUser(formData);
-        const novoUsuario = { ...formData, id: novoId };
+        const novoId = await createUser(payload);
+        const novoUsuario = { ...payload, id: novoId };
         onSave(novoUsuario);
       }
 
@@ -123,20 +137,47 @@ const ModalNovoUsuario = ({
   };
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-container">
-        <div className="modal-header">
-          <FaUser className="modal-icon" />
-          <h2 className="modal-title">
-            {usuarioParaEditar ? "Editar Usuário" : "Cadastrar Novo Usuário"}
-          </h2>
+    <div className="user-form-modal__backdrop" onClick={onClose}>
+      <div
+        className="user-form-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="user-form-modal__header">
+          <div className="user-form-modal__title-wrap">
+            <div className="user-form-modal__icon">
+              <User size={20} />
+            </div>
+
+            <div>
+              <h2 className="user-form-modal__title">
+                {usuarioParaEditar ? "Editar usuário" : "Cadastrar novo usuário"}
+              </h2>
+              <p className="user-form-modal__subtitle">
+                Preencha os dados do usuário e salve as alterações.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="user-form-modal__close"
+            onClick={onClose}
+            disabled={loading}
+            aria-label="Fechar modal"
+            title="Fechar"
+          >
+            <X size={18} />
+          </button>
         </div>
-        <hr />
 
-        {error && <div className="error-alert">{error}</div>}
+        {error && (
+          <div className="user-form-modal__alert user-form-modal__alert--error">
+            {error}
+          </div>
+        )}
 
-        <form className="modal-form" onSubmit={handleSubmit}>
-          <div className="form-group">
+        <form className="user-form-modal__form" onSubmit={handleSubmit}>
+          <div className="user-form-modal__field">
             <label>Nome completo *</label>
             <input
               type="text"
@@ -148,7 +189,7 @@ const ModalNovoUsuario = ({
             />
           </div>
 
-          <div className="form-group">
+          <div className="user-form-modal__field">
             <label>CPF *</label>
             <input
               type="text"
@@ -157,11 +198,11 @@ const ModalNovoUsuario = ({
               onChange={handleChange}
               required
               disabled={loading}
-              placeholder="Digite apenas números (ex: 12345678900)"
+              placeholder="Digite apenas números"
             />
           </div>
 
-          <div className="form-group">
+          <div className="user-form-modal__field">
             <label>E-mail *</label>
             <input
               type="email"
@@ -173,7 +214,7 @@ const ModalNovoUsuario = ({
             />
           </div>
 
-          <div className="form-group">
+          <div className="user-form-modal__field">
             <label>
               {usuarioParaEditar ? "Nova senha (opcional)" : "Senha *"}
             </label>
@@ -187,8 +228,8 @@ const ModalNovoUsuario = ({
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
+          <div className="user-form-modal__grid">
+            <div className="user-form-modal__field">
               <label>Telefone</label>
               <input
                 type="text"
@@ -200,7 +241,7 @@ const ModalNovoUsuario = ({
               />
             </div>
 
-            <div className="form-group">
+            <div className="user-form-modal__field">
               <label>Celular</label>
               <input
                 type="text"
@@ -213,7 +254,7 @@ const ModalNovoUsuario = ({
             </div>
           </div>
 
-          <div className="form-group">
+          <div className="user-form-modal__field">
             <label>Endereço</label>
             <input
               type="text"
@@ -225,9 +266,9 @@ const ModalNovoUsuario = ({
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>Tipo de Usuário *</label>
+          <div className="user-form-modal__grid">
+            <div className="user-form-modal__field">
+              <label>Tipo de usuário *</label>
               <select
                 name="tipoUsuario"
                 value={formData.tipoUsuario}
@@ -240,7 +281,7 @@ const ModalNovoUsuario = ({
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="user-form-modal__field">
               <label>Status *</label>
               <select
                 name="status"
@@ -255,7 +296,7 @@ const ModalNovoUsuario = ({
             </div>
           </div>
 
-          <div className="form-group">
+          <div className="user-form-modal__field">
             <label>Administradora</label>
             <input
               type="text"
@@ -266,16 +307,21 @@ const ModalNovoUsuario = ({
             />
           </div>
 
-          <div className="modal-actions">
+          <div className="user-form-modal__actions">
             <button
               type="button"
-              className="btn-cancelar"
+              className="user-form-modal__ghost-button"
               onClick={onClose}
               disabled={loading}
             >
               Cancelar
             </button>
-            <button type="submit" className="btn-salvar" disabled={loading}>
+
+            <button
+              type="submit"
+              className="user-form-modal__primary-button"
+              disabled={loading}
+            >
               {loading ? "Salvando..." : "Salvar"}
             </button>
           </div>
