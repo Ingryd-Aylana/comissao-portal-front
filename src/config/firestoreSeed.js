@@ -69,7 +69,7 @@ async function seedNovosDados() {
         },
         segurados: [
           {
-            id: "LrLLRzK67Nd0cPmGnBZmOQ49A4z1",
+            id: "LrLLRzK67Nd0cPmGnBZmOQ49A4z1", 
             data: {
               segurado: "CONDOMINIO EDIFICIO RIO DOURADO",
               apolice: "202521160096906",
