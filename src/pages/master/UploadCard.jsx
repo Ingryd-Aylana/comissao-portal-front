@@ -1,94 +1,88 @@
 import React, { useEffect, useMemo, useState } from "react";
-import * as XLSX from "xlsx";
-import { FileSpreadsheet, Upload, Send, Search } from "lucide-react";
-
-import "../../components/styles/UploadCard.css";
 import {
-  getAllProdutores,
-  searchProdutoresByNomeOuEmail,
-} from "../../services/userService";
+  FileSpreadsheet,
+  Upload,
+  Send,
+  Search,
+  Download,
+} from "lucide-react";
+import * as XLSX from "xlsx";
+import "../../components/styles/UploadCard.css";
 
-export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
+import {
+  buscarProdutores,
+  previewPlanilha,
+  importarSingle,
+} from "../../services/fedcorpApi.js";
+
+export default function UploadCard({ onDataParsed }) {
+  const [arquivo, setArquivo] = useState(null);
   const [fileName, setFileName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [dados, setDados] = useState([]);
   const [isSending, setIsSending] = useState(false);
 
+  const [preview, setPreview] = useState([]);
   const [produtores, setProdutores] = useState([]);
   const [inputBusca, setInputBusca] = useState("");
   const [produtorSelecionado, setProdutorSelecionado] = useState("");
   const [loadingProdutores, setLoadingProdutores] = useState(false);
 
   useEffect(() => {
-    const buscar = async () => {
+    const carregar = async () => {
       try {
         setLoadingProdutores(true);
+        setError("");
 
-        if (inputBusca.trim().length >= 3) {
-          const resultados = await searchProdutoresByNomeOuEmail(inputBusca);
-          setProdutores(resultados);
-          setError("");
-        } else {
-          const todos = await getAllProdutores();
-          setProdutores(todos);
-          setError("");
-        }
+        const resultado = await buscarProdutores(inputBusca);
+        setProdutores(Array.isArray(resultado) ? resultado : []);
       } catch (err) {
-        console.error("Erro ao carregar produtores:", err);
+        console.error(err);
+        setError("Erro ao carregar produtores.");
       } finally {
         setLoadingProdutores(false);
       }
     };
 
-    const timeout = setTimeout(buscar, 400);
-    return () => clearTimeout(timeout);
+    const timer = setTimeout(carregar, 400);
+    return () => clearTimeout(timer);
   }, [inputBusca]);
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files?.[0];
+
     setSuccess(false);
+    setError("");
+    setPreview([]);
+    setArquivo(null);
+    setFileName("");
 
     if (!file) {
       setError("Nenhum arquivo selecionado.");
       return;
     }
 
-    if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
-      setError("Formato inválido. Envie um arquivo .xlsx ou .xls.");
+    if (!/\.(xlsx|xls|csv)$/i.test(file.name)) {
+      setError("Formato inválido. Envie .xlsx, .xls ou .csv.");
       return;
     }
 
-    setFileName(file.name);
-    setError("");
+    try {
+      setArquivo(file);
+      setFileName(file.name);
 
-    const reader = new FileReader();
+      const resultadoPreview = await previewPlanilha(file, 10);
+      const linhasPreview = resultadoPreview?.preview || [];
 
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+      setPreview(linhasPreview);
 
-        if (jsonData.length === 0) {
-          setError("A planilha está vazia.");
-          return;
-        }
-
-        setDados(jsonData);
-
-        if (typeof onDataParsed === "function") {
-          onDataParsed(jsonData);
-        }
-      } catch (err) {
-        console.error("Erro ao processar arquivo:", err);
-        setError("Erro ao processar o arquivo.");
+      if (typeof onDataParsed === "function") {
+        onDataParsed(linhasPreview);
       }
-    };
-
-    reader.readAsArrayBuffer(file);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Erro ao pré-visualizar a planilha.");
+    }
   };
 
   const handleSelectProdutor = (produtor) => {
@@ -103,40 +97,63 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
   }, [produtores, inputBusca]);
 
   const handleSendSpreadsheet = async () => {
-    setIsSending(true);
-    setError("");
-    setSuccess(false);
-
     try {
-      const response = await fetch("http://localhost:3000/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          dados,
-          produtorId: produtorSelecionado,
-        }),
-      });
+      setIsSending(true);
+      setError("");
+      setSuccess(false);
 
-      if (!response.ok) {
-        throw new Error("Falha ao enviar para o servidor.");
+      if (!arquivo) {
+        throw new Error("Selecione um arquivo.");
       }
 
-      const resultado = await response.json();
-      console.log("Resposta do servidor:", resultado);
+      if (!produtorSelecionado) {
+        throw new Error("Selecione um produtor.");
+      }
+
+      await importarSingle(arquivo, produtorSelecionado, "Importação manual");
+
       setSuccess(true);
-    } catch (erro) {
-      console.error("Erro ao enviar os dados:", erro);
-      setError("Erro ao enviar os dados.");
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Erro ao enviar os dados.");
     } finally {
       setIsSending(false);
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const dadosModelo = [
+      {
+        Segurado: "",
+        Apólice: "",
+        "Prêmio Líquido": "",
+        Comissão: "",
+      },
+      {
+        Segurado: "",
+        Apólice: "",
+        "Prêmio Líquido": "",
+        Comissão: "",
+      },
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(dadosModelo);
+
+    worksheet["!cols"] = [
+      { wch: 35 },
+      { wch: 22 },
+      { wch: 18 },
+      { wch: 14 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Modelo");
+
+    XLSX.writeFile(workbook, "modelo-planilha-comissao.xlsx");
+  };
+
   return (
     <section className="upload-page">
-
       <div className="upload-page__grid">
         <section className="upload-panel">
           <div className="upload-panel__head">
@@ -146,7 +163,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
 
             <div>
               <h3>Upload do arquivo</h3>
-              <p>Arquivos aceitos: .xlsx e .xls</p>
+              <p>Arquivos aceitos: .xlsx, .xls e .csv</p>
             </div>
           </div>
 
@@ -162,7 +179,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
                   <input
                     type="text"
                     id="busca-produtor"
-                    placeholder="Digite o nome ou e-mail..."
+                    placeholder="Digite o nome ou e-mail."
                     value={inputBusca}
                     onChange={(e) => {
                       setInputBusca(e.target.value);
@@ -189,7 +206,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
               </div>
 
               {loadingProdutores && (
-                <p className="upload-field__hint">Carregando produtores...</p>
+                <p className="upload-field__hint">Carregando produtores.</p>
               )}
             </div>
 
@@ -206,7 +223,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
               <input
                 id="file-upload"
                 type="file"
-                accept=".xlsx, .xls"
+                accept=".xlsx,.xls,.csv"
                 onChange={handleFileUpload}
                 className="upload-hidden-input"
               />
@@ -235,7 +252,7 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
                 className="upload-submit-button"
                 onClick={handleSendSpreadsheet}
                 disabled={
-                  dados.length === 0 || isSending || !produtorSelecionado
+                  preview.length === 0 || isSending || !produtorSelecionado
                 }
               >
                 {isSending ? (
@@ -256,16 +273,26 @@ export default function UploadCard({ onDataParsed, mostrarRelatorio }) {
 
           <ul className="upload-side-card__list">
             <li>Selecione o produtor antes de enviar a planilha.</li>
-            <li>Use apenas arquivos Excel nos formatos permitidos.</li>
+            <li>Baixe a planilha modelo para garantir compatibilidade.</li>
+            <li>Use apenas arquivos Excel ou CSV nos formatos permitidos.</li>
             <li>Verifique se a planilha não está vazia.</li>
             <li>Após o envio, valide o processamento dos dados.</li>
           </ul>
+
+          <button
+            type="button"
+            className="upload-template-button"
+            onClick={handleDownloadTemplate}
+          >
+            <Download size={18} />
+            Baixar modelo de planilha
+          </button>
 
           <div className="upload-side-card__status">
             <span className="upload-side-card__status-label">
               Linhas carregadas
             </span>
-            <strong>{dados.length}</strong>
+            <strong>{preview.length}</strong>
           </div>
         </aside>
       </div>

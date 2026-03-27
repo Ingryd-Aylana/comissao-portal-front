@@ -36,7 +36,7 @@ export default function Sidebar({ onLogout }) {
       </div>
 
       <div className="app-shell__brand">
-        <h2>Portal do Produtor</h2>
+        <h2 className="app-title">Portal do Produtor</h2>
         <p>Comissões e relatórios</p>
       </div>
 

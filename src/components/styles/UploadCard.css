@@ -322,3 +322,30 @@
     justify-content: center;
   }
 }
+
+.upload-template-button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #1f6feb;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.upload-template-button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.upload-template-button:active {
+  transform: translateY(0);
+}
